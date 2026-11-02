@@ -187,6 +187,37 @@ if(window.Chart){
  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{color:"#c5d2e1"}}}}
  });
 }
+ 
+<!-- SUPABASE CONNECTION -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL = "mine-plan-engineering";
+
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_68Z3BCRyQVYn-X78NBCSGw_oC1Iw_hF";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+);
+
+// Test koneksi Supabase
+console.log("Mine Plan Supabase initialized");
+
+async function checkSupabaseConnection() {
+    const { data, error } =
+        await supabaseClient.auth.getSession();
+
+    if (error) {
+        console.error("Supabase connection error:", error.message);
+        return;
+    }
+
+    console.log("Supabase connection successful");
+    console.log("User session:", data.session);
+}
+
+checkSupabaseConnection();
 </script>
 </body>
 </html>
