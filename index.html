@@ -188,39 +188,9 @@ if(window.Chart){
  });
 }
  
+
 <!-- SUPABASE CONNECTION -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-const SUPABASE_URL = "mine-plan-engineering";
-
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_68Z3BCRyQVYn-X78NBCSGw_oC1Iw_hF";
-
-const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-);
-
-// Test koneksi Supabase
-console.log("Mine Plan Supabase initialized");
-
-async function checkSupabaseConnection() {
-    const { data, error } =
-        await supabaseClient.auth.getSession();
-
-    if (error) {
-        console.error("Supabase connection error:", error.message);
-        return;
-    }
-
-    console.log("Supabase connection successful");
-    console.log("User session:", data.session);
-}
-
-checkSupabaseConnection();
- 
-<!-- SUPABASE DATABASE CONNECTION -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
 <script>
 const SUPABASE_URL =
@@ -234,21 +204,22 @@ const supabaseClient = window.supabase.createClient(
     SUPABASE_PUBLISHABLE_KEY
 );
 
-async function testDatabaseConnection() {
+async function testSupabaseConnection() {
     const { data, error } = await supabaseClient
         .from("production_daily")
         .select("id")
         .limit(1);
 
     if (error) {
-        console.error("Database error:", error.message);
+        console.error("Supabase connection failed:", error.message);
         return;
     }
 
-    console.log("Supabase connected successfully!");
+    console.log("SUCCESS: Supabase database connected!");
+    console.log("Database response:", data);
 }
 
-testDatabaseConnection();
+testSupabaseConnection();
 </script>
 </body>
 </html>
