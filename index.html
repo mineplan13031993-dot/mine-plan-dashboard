@@ -1,132 +1,192 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mine Plan Engineering Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f1f4f8;color:#263449}
-.sidebar{position:fixed;left:0;top:0;width:245px;height:100vh;background:#14243a;color:white;padding:25px 16px}
-.brand{font-size:20px;font-weight:bold;margin-bottom:35px}
-.brand small{display:block;font-size:11px;color:#9fb2ca;margin-top:7px}
-.menu{display:block;color:#c6d3e2;text-decoration:none;padding:13px;border-radius:7px;margin:6px 0}
-.menu.active,.menu:hover{background:#294968;color:white}
-.main{margin-left:245px;padding:28px}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
-.header h2{margin:0;color:#17365d}
-.header p{color:#718096;font-size:13px}
-.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:17px}
-.card{background:white;border-radius:10px;padding:20px;box-shadow:0 2px 8px #172b4d0c}
-.card p{color:#758399;font-size:13px;margin:0 0 12px}
-.value{font-size:26px;font-weight:bold;color:#17365d}
-.sub{font-size:12px;color:#16845b;margin-top:10px}
-.section{margin-top:24px}
-.section h3{font-size:17px;color:#17365d}
-.panel{background:white;border-radius:10px;padding:20px}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{text-align:left;padding:14px;border-bottom:1px solid #e8edf3}
-th{background:#f5f7fa;color:#52647b}
-.status{color:#16845b;font-weight:bold}
-.bars{height:180px;display:flex;align-items:end;gap:18px;padding:20px 10px 0}
-.bar{flex:1;background:#3278b7;border-radius:5px 5px 0 0;position:relative;min-width:12px}
-.bar span{position:absolute;bottom:-23px;left:0;width:100%;text-align:center;font-size:11px;color:#667}
-.footer{margin-top:30px;color:#8491a3;font-size:12px}
-@media(max-width:900px){
-.sidebar{width:65px;padding:15px 8px}
-.brand{font-size:0}.brand small{display:none}
-.menu{font-size:0;text-align:center}
-.main{margin-left:65px;padding:15px}
-.cards{grid-template-columns:repeat(2,1fr)}
-}
-@media(max-width:500px){.cards{grid-template-columns:1fr}.header{align-items:flex-start;gap:10px;flex-direction:column}}
+body{margin:0;background:#0b1422;color:#e7edf7;font-family:Arial,sans-serif}
+.sidebar{position:fixed;width:235px;height:100vh;background:#101e30;padding:24px 14px;border-right:1px solid #263950}
+.brand{font-size:19px;font-weight:bold;color:white;padding:8px;margin-bottom:30px}
+.brand small{display:block;color:#7e9ab8;font-size:10px;margin-top:7px;letter-spacing:2px}
+.nav{display:block;width:100%;padding:13px;margin:5px 0;background:none;border:0;color:#a8b9cc;text-align:left;border-radius:7px;cursor:pointer;font-size:13px}
+.nav:hover,.nav.active{background:#24466a;color:white}
+.main{margin-left:235px;padding:28px;max-width:1600px}
+.top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #263950;padding-bottom:20px}
+h1{font-size:25px;margin:5px 0}
+h2{font-size:16px}
+.sub{color:#91a4ba;font-size:12px}
+button,select{cursor:pointer}
+.lang{background:#24466a;border:1px solid #42688c;color:white;padding:9px 15px;border-radius:6px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:25px}
+.card,.panel{background:#132238;border:1px solid #293d56;border-radius:10px;padding:19px}
+.card p{font-size:11px;color:#91a4ba}
+.value{font-size:27px;font-weight:bold;margin:12px 0}
+.green{color:#4cc99b;font-size:11px}
+.grid{display:grid;grid-template-columns:1.6fr 1fr;gap:15px;margin-top:20px}
+.chart{height:270px}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:15px}
+td,th{padding:13px 8px;text-align:left;border-bottom:1px solid #293d56}
+th{color:#8ca3bd}
+.status{color:#e9bd6c}
+.section{margin-top:25px}
+.module{display:none}
+.module.active{display:block}
+.footer{color:#70859f;font-size:11px;margin-top:35px}
+@media(max-width:900px){.sidebar{width:65px;padding:15px 6px}.brand{font-size:0}.brand small{display:none}.nav{font-size:0;text-align:center;padding:13px 5px}.nav::first-letter{font-size:19px}.main{margin-left:65px;padding:15px}.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+@media(max-width:480px){.kpis{grid-template-columns:1fr 1fr}.value{font-size:20px}.top{gap:10px}.main{padding:12px}}
 </style>
 </head>
 <body>
 
 <aside class="sidebar">
-<div class="brand">MINE PLAN<small>ENGINEERING DASHBOARD</small></div>
-<a class="menu active" href="#">▦ Overview</a>
-<a class="menu" href="#">⛏ Mine Planning</a>
-<a class="menu" href="#">◈ Pit Optimization</a>
-<a class="menu" href="#">▤ Production</a>
-<a class="menu" href="#">▥ Material Balance</a>
-<a class="menu" href="#">🚛 Fleet Productivity</a>
-<a class="menu" href="#">▧ Reclamation</a>
-<a class="menu" href="#">▤ Reporting</a>
+<div class="brand">MINE PLAN<small>ENGINEERING PLATFORM</small></div>
+<button class="nav active" onclick="page('overview',this)">▦ Overview</button>
+<button class="nav" onclick="page('planning',this)">⌖ Mine Planning</button>
+<button class="nav" onclick="page('production',this)">▤ Production Review</button>
+<button class="nav" onclick="page('materials',this)">◈ Material Balance</button>
+<button class="nav" onclick="page('fleet',this)">▣ Fleet Productivity</button>
+<button class="nav" onclick="page('reclamation',this)">♧ Reclamation</button>
+<button class="nav" onclick="page('reports',this)">▥ Reports</button>
 </aside>
 
 <main class="main">
-<header class="header">
+<header class="top">
 <div>
-<h2>Mine Plan Engineering</h2>
-<p>Nickel Mining Operations | Management Dashboard</p>
+<div class="sub">MINE PLAN ENGINEERING / NICKEL OPERATIONS</div>
+<h1 id="heading">Executive Dashboard</h1>
+<div class="sub" id="subtitle">Mining performance monitoring</div>
 </div>
-<div>📅 November 2026</div>
+<button class="lang" onclick="toggleLanguage()" id="lang">ID</button>
 </header>
 
-<div class="cards">
-<div class="card">
-<p>ORE PRODUCTION</p>
-<div class="value">25,600</div>
-<div class="sub">WMT | Sample data</div>
+<div id="overview" class="module active">
+<div class="section">
+<div class="sub">NOVEMBER 2026 | DEMONSTRATION DATA</div>
+<h2 id="kpiTitle">Key Performance Indicators</h2>
 </div>
-<div class="card">
-<p>WASTE MOVEMENT</p>
-<div class="value">48,500</div>
-<div class="sub">BCM | Sample data</div>
+
+<div class="kpis">
+<div class="card"><p id="oreLabel">ORE PRODUCTION</p><div class="value">25,600 <small>WMT</small></div><div class="green">↑ 4.8% vs previous period</div></div>
+<div class="card"><p id="wasteLabel">WASTE MOVEMENT</p><div class="value">48,500 <small>BCM</small></div><div class="green">↑ 2.1% vs previous period</div></div>
+<div class="card"><p id="achievementLabel">PLAN ACHIEVEMENT</p><div class="value">92.5%</div><div class="green">Monthly plan performance</div></div>
+<div class="card"><p id="fleetLabel">FLEET UTILIZATION</p><div class="value">85.0%</div><div class="green">Effective operating time</div></div>
 </div>
-<div class="card">
-<p>PLAN ACHIEVEMENT</p>
-<div class="value">92.5%</div>
-<div class="sub">Sample data</div>
+
+<div class="grid">
+<div class="panel">
+<h2 id="productionTitle">Weekly Production Performance</h2>
+<div class="sub">Plan vs Actual | Ore WMT</div>
+<div class="chart"><canvas id="productionChart"></canvas></div>
 </div>
-<div class="card">
-<p>FLEET UTILIZATION</p>
-<div class="value">85.0%</div>
-<div class="sub">Sample data</div>
+<div class="panel">
+<h2 id="materialTitle">Material Distribution</h2>
+<div class="sub">Current period | Sample data</div>
+<div class="chart"><canvas id="materialChart"></canvas></div>
 </div>
 </div>
 
-<div class="section">
-<h3>Weekly Production Performance</h3>
+<div class="grid">
 <div class="panel">
-<p>Production Plan vs Actual (Illustrative)</p>
-<div class="bars">
-<div class="bar" style="height:60%"></div>
-<div class="bar" style="height:75%"></div>
-<div class="bar" style="height:68%"></div>
-<div class="bar" style="height:90%"></div>
-<div class="bar" style="height:80%"></div>
-<div class="bar" style="height:95%"></div>
-<div class="bar" style="height:70%"></div>
-</div>
-<div style="display:flex;justify-content:space-around;margin-top:35px;font-size:12px;color:#718096">
-<span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span>
-</div>
-</div>
-</div>
-
-<div class="section">
-<h3>Material Balance Monitoring</h3>
-<div class="panel">
+<h2 id="balanceTitle">Material Balance Monitoring</h2>
 <table>
-<thead>
-<tr><th>Material</th><th>Plan</th><th>Actual</th><th>Unit</th><th>Status</th></tr>
-</thead>
+<thead><tr><th>Material</th><th>Plan</th><th>Actual</th><th>Unit</th><th>Status</th></tr></thead>
 <tbody>
 <tr><td>Saprolite</td><td>10,000</td><td>9,500</td><td>WMT</td><td class="status">Monitoring</td></tr>
-<tr><td>LIM</td><td>8,000</td><td>7,800</td><td>WMT</td><td class="status">Monitoring</td></tr>
+<tr><td>LIM</td><td>8,000</td><td>7,800</td><td>WMT</td><td class="green">On track</td></tr>
 <tr><td>Waste</td><td>50,000</td><td>48,500</td><td>BCM</td><td class="status">Monitoring</td></tr>
 </tbody>
 </table>
 </div>
+<div class="panel">
+<h2 id="fleetTitle">Fleet Summary</h2>
+<table>
+<tr><td>Excavators</td><td>12 / 14</td><td class="green">Operating</td></tr>
+<tr><td>Dump Trucks</td><td>38 / 42</td><td class="green">Operating</td></tr>
+<tr><td>Support Units</td><td>8 / 10</td><td class="status">Monitoring</td></tr>
+</table>
+</div>
+</div>
 </div>
 
-<div class="footer">
-Mine Plan Engineering Dashboard | Nickel Mining Operations | Version 1.0
+<div id="planning" class="module">
+<h2>Mine Planning | Perencanaan Tambang</h2>
+<div class="panel">Life of Mine (LOM), Pit Design, Pushback, Mine Schedule and Reserve Planning.</div>
 </div>
+<div id="production" class="module">
+<h2>Production Review | Review Produksi</h2>
+<div class="panel">Daily Production, Weekly Review, Monthly Review and P1–P11 monitoring.</div>
+</div>
+<div id="materials" class="module">
+<h2>Material Balance | Neraca Material</h2>
+<div class="panel">Saprolite, LIM, Waste, Opening Stock, Mining, Hauling and Closing Stock.</div>
+</div>
+<div id="fleet" class="module">
+<h2>Fleet Productivity | Produktivitas Armada</h2>
+<div class="panel">Excavator, Dump Truck, Availability, Utilization, Cycle Time and Productivity.</div>
+</div>
+<div id="reclamation" class="module">
+<h2>Reclamation | Reklamasi</h2>
+<div class="panel">Land Preparation, Topsoil Spreading, Cut & Fill, Plan vs Actual.</div>
+</div>
+<div id="reports" class="module">
+<h2>Reports | Laporan</h2>
+<div class="panel">Daily, Weekly, Monthly and Yearly Mining Reports.</div>
+</div>
+
+<div class="footer">MINE PLAN ENGINEERING DASHBOARD | NICKEL MINING OPERATIONS | VERSION 2.0</div>
 </main>
+
+<script>
+let language="en";
+
+function page(id,button){
+ document.querySelectorAll(".module").forEach(x=>x.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));
+ button.classList.add("active");
+ document.getElementById("heading").textContent=button.textContent.trim();
+}
+
+function toggleLanguage(){
+ language=language==="en"?"id":"en";
+ document.getElementById("lang").textContent=language==="en"?"ID":"EN";
+ const id=language==="id";
+ const text={
+ kpiTitle:id?"Indikator Kinerja Utama":"Key Performance Indicators",
+ oreLabel:id?"PRODUKSI BIJIH":"ORE PRODUCTION",
+ wasteLabel:id?"PEMINDAHAN WASTE":"WASTE MOVEMENT",
+ achievementLabel:id?"PENCAPAIAN RENCANA":"PLAN ACHIEVEMENT",
+ fleetLabel:id?"UTILISASI ARMADA":"FLEET UTILIZATION",
+ productionTitle:id?"Kinerja Produksi Mingguan":"Weekly Production Performance",
+ materialTitle:id?"Distribusi Material":"Material Distribution",
+ balanceTitle:id?"Pemantauan Neraca Material":"Material Balance Monitoring",
+ fleetTitle:id?"Ringkasan Armada":"Fleet Summary"
+ };
+ Object.keys(text).forEach(k=>document.getElementById(k).textContent=text[k]);
+ document.getElementById("subtitle").textContent=id?
+ "Pemantauan kinerja operasional tambang nikel":
+ "Mining performance monitoring";
+}
+
+if(window.Chart){
+ Chart.defaults.color="#91a4ba";
+ new Chart(document.getElementById("productionChart"),{
+ type:"bar",
+ data:{labels:["W1","W2","W3","W4"],datasets:[
+ {label:"Plan",data:[6200,6500,6400,6800],backgroundColor:"#4b91e2",borderRadius:5},
+ {label:"Actual",data:[5900,6300,6100,6500],backgroundColor:"#39b9a5",borderRadius:5}
+ ]},
+ options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#c5d2e1"}}},scales:{x:{grid:{display:false}},y:{grid:{color:"#293d56"}}}}
+ });
+ new Chart(document.getElementById("materialChart"),{
+ type:"doughnut",
+ data:{labels:["Saprolite","LIM","Other ore"],datasets:[{data:[48,32,20],backgroundColor:["#4b91e2","#39b9a5","#9b83e8"],borderColor:"#132238",borderWidth:4}]},
+ options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{color:"#c5d2e1"}}}}
+ });
+}
+</script>
 </body>
-<!-- Trigger GitHub Pages rebuild -->
 </html>
