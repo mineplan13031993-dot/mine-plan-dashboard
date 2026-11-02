@@ -37,9 +37,161 @@ th{color:#8ca3bd}
 .footer{color:#70859f;font-size:11px;margin-top:35px}
 @media(max-width:900px){.sidebar{width:65px;padding:15px 6px}.brand{font-size:0}.brand small{display:none}.nav{font-size:0;text-align:center;padding:13px 5px}.nav::first-letter{font-size:19px}.main{margin-left:65px;padding:15px}.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
 @media(max-width:480px){.kpis{grid-template-columns:1fr 1fr}.value{font-size:20px}.top{gap:10px}.main{padding:12px}}
+
+/* LOGIN AND REGISTER DESIGN */
+body:not(.authenticated) .sidebar,
+body:not(.authenticated) .main {
+    display: none;
+}
+
+.auth-screen {
+    display: none;
+    min-height: 100vh;
+    background: #0b1422;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+body:not(.authenticated) .auth-screen {
+    display: flex;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    padding: 32px;
+    background: #132238;
+    border: 1px solid #293d56;
+    border-radius: 14px;
+}
+
+.auth-brand {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.auth-brand h2 {
+    color: white;
+    font-size: 25px;
+}
+
+.auth-brand p,
+.auth-subtitle {
+    color: #91a4ba;
+    font-size: 12px;
+}
+
+.auth-card label {
+    display: block;
+    color: #c5d2e1;
+    font-size: 12px;
+    margin: 15px 0 7px;
+}
+
+.auth-card input {
+    width: 100%;
+    padding: 12px;
+    color: white;
+    background: #0b1422;
+    border: 1px solid #293d56;
+    border-radius: 7px;
+}
+
+.auth-primary,
+.auth-secondary {
+    width: 100%;
+    padding: 12px;
+    margin-top: 18px;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.auth-primary {
+    color: white;
+    background: #2878c7;
+    border: 0;
+    font-weight: bold;
+}
+
+.auth-secondary {
+    color: #9fc7f0;
+    background: transparent;
+    border: 1px solid #293d56;
+}
+
+.auth-message {
+    color: #4cc99b;
+    font-size: 12px;
+    margin-top: 15px;
+    overflow-wrap: anywhere;
+}
+
+.auth-error {
+    color: #ff8888;
+}
+
 </style>
 </head>
 <body>
+
+<!-- LOGIN AND REGISTER SCREEN -->
+<div class="auth-screen">
+  <div class="auth-card">
+
+    <div class="auth-brand">
+      <h2>MINE PLAN</h2>
+      <p>ENGINEERING PLATFORM</p>
+      <p>Nickel Mining Operations</p>
+    </div>
+
+    <div id="loginForm">
+      <h2>Welcome Back</h2>
+      <p class="auth-subtitle">Login to your account</p>
+
+      <form id="loginFormElement">
+        <label>Email Address</label>
+        <input id="loginEmail" type="email" required>
+
+        <label>Password</label>
+        <input id="loginPassword" type="password" required>
+
+        <button class="auth-primary" type="submit">LOGIN</button>
+      </form>
+
+      <button class="auth-secondary" type="button" onclick="showRegister()">
+        CREATE NEW ACCOUNT / REGISTER
+      </button>
+    </div>
+
+    <div id="registerForm" hidden>
+      <h2>Create Account</h2>
+      <p class="auth-subtitle">Register Mine Plan Engineering</p>
+
+      <form id="registerFormElement">
+        <label>Full Name</label>
+        <input id="registerName" type="text" required>
+
+        <label>Email Address</label>
+        <input id="registerEmail" type="email" required>
+
+        <label>Password</label>
+        <input id="registerPassword" type="password" minlength="8" required>
+
+        <label>Confirm Password</label>
+        <input id="registerConfirm" type="password" minlength="8" required>
+
+        <button class="auth-primary" type="submit">REGISTER</button>
+      </form>
+
+      <button class="auth-secondary" type="button" onclick="showLogin()">
+        BACK TO LOGIN
+      </button>
+    </div>
+
+    <div id="authMessage" class="auth-message"></div>
+  </div>
+</div>
 
 <aside class="sidebar">
 <div class="brand">MINE PLAN<small>ENGINEERING PLATFORM</small></div>
@@ -192,35 +344,147 @@ if(window.Chart){
 <!-- SUPABASE JAVASCRIPT LIBRARY -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
-<!-- SUPABASE DATABASE CONNECTION -->
+
+<!-- SUPABASE AUTHENTICATION -->
 <script>
 const SUPABASE_URL =
-    "https://mjerfpzagymscioovzji.supabase.co";
+  "https://mjerfpzagymscioovzji.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
-    "sb_publishable_68Z3BCRyQVYn-X78NBCSGw_oC1Iw_hF";
+  "sb_publishable_68Z3BCRyQVYn-X78NBCSGw_oC1Iw_hF";
 
 const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
 );
 
-async function testSupabaseConnection() {
-    const { data, error } = await supabaseClient
-        .from("production_daily")
-        .select("id")
-        .limit(1);
+const authMessage = document.getElementById("authMessage");
 
-    if (error) {
-        console.error("Supabase connection failed:", error.message);
-        return;
-    }
-
-    console.log("SUCCESS: Supabase database connected!");
-    console.log("Database response:", data);
+function showMessage(message, isError = false) {
+  authMessage.textContent = message;
+  authMessage.classList.toggle("auth-error", isError);
 }
 
-testSupabaseConnection();
+function showRegister() {
+  document.getElementById("loginForm").hidden = true;
+  document.getElementById("registerForm").hidden = false;
+  showMessage("");
+}
+
+function showLogin() {
+  document.getElementById("registerForm").hidden = true;
+  document.getElementById("loginForm").hidden = false;
+  showMessage("");
+}
+
+// LOGIN
+document.getElementById("loginFormElement")
+.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+
+  showMessage("Signing in...");
+
+  const { data, error } = await supabaseClient.auth
+    .signInWithPassword({ email, password });
+
+  if (error) {
+    showMessage(error.message, true);
+    return;
+  }
+
+  setAuthenticated(data.session);
+  showMessage("");
+});
+
+// REGISTER
+document.getElementById("registerFormElement")
+.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const fullName = document.getElementById("registerName").value.trim();
+  const email = document.getElementById("registerEmail").value.trim();
+  const password = document.getElementById("registerPassword").value;
+  const confirm = document.getElementById("registerConfirm").value;
+
+  if (password !== confirm) {
+    showMessage("Password confirmation does not match.", true);
+    return;
+  }
+
+  if (password.length < 8) {
+    showMessage("Password must contain at least 8 characters.", true);
+    return;
+  }
+
+  showMessage("Creating account...");
+
+  const { data, error } = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { full_name: fullName },
+      emailRedirectTo:
+        "https://mineplan13031993-dot.github.io/mine-plan-dashboard/"
+    }
+  });
+
+  if (error) {
+    showMessage(error.message, true);
+    return;
+  }
+
+  if (data.session) {
+    setAuthenticated(data.session);
+    showMessage("Registration successful.");
+  } else {
+    showMessage(
+      "Account created. Please verify your email before login."
+    );
+  }
+});
+
+// SESSION
+function setAuthenticated(session) {
+  document.body.classList.toggle("authenticated", Boolean(session));
+
+  let logout = document.getElementById("logoutButton");
+
+  if (session && !logout) {
+    logout = document.createElement("button");
+    logout.id = "logoutButton";
+    logout.className = "lang";
+    logout.textContent = "Logout";
+    document.querySelector(".top").appendChild(logout);
+
+    logout.addEventListener("click", async () => {
+      const { error } = await supabaseClient.auth.signOut();
+      if (error) showMessage(error.message, true);
+    });
+  }
+
+  if (!session && logout) logout.remove();
+}
+
+// RESTORE SESSION
+async function initializeAuthentication() {
+  const { data, error } = await supabaseClient.auth.getSession();
+
+  if (error) {
+    showMessage(error.message, true);
+    return;
+  }
+
+  setAuthenticated(data.session);
+}
+
+initializeAuthentication();
+
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  setAuthenticated(session);
+});
 </script>
 
 </body>
