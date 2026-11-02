@@ -187,11 +187,12 @@ if(window.Chart){
  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{color:"#c5d2e1"}}}}
  });
 }
- 
+</script> 
 
-<!-- SUPABASE CONNECTION -->
+<!-- SUPABASE JAVASCRIPT LIBRARY -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
+<!-- SUPABASE DATABASE CONNECTION -->
 <script>
 const SUPABASE_URL =
     "https://mjerfpzagymscioovzji.supabase.co";
@@ -221,5 +222,7 @@ async function testSupabaseConnection() {
 
 testSupabaseConnection();
 </script>
+
 </body>
 </html>
+
