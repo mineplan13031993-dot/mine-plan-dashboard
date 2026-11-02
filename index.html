@@ -218,6 +218,37 @@ async function checkSupabaseConnection() {
 }
 
 checkSupabaseConnection();
+ 
+<!-- SUPABASE DATABASE CONNECTION -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL =
+    "https://mjerfpzagymscioovzji.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_68Z3BCRyQVYn-X78NBCSGw_oC1Iw_hF";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+);
+
+async function testDatabaseConnection() {
+    const { data, error } = await supabaseClient
+        .from("production_daily")
+        .select("id")
+        .limit(1);
+
+    if (error) {
+        console.error("Database error:", error.message);
+        return;
+    }
+
+    console.log("Supabase connected successfully!");
+}
+
+testDatabaseConnection();
 </script>
 </body>
 </html>
