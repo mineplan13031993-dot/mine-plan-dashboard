@@ -445,10 +445,43 @@ document.getElementById("registerFormElement")
     );
   }
 });
+// TEST SUPABASE PRODUCTION CONNECTION
+let lastProductionTestUser = null;
 
+async function testProductionConnection(session) {
+  if (!session) return;
+
+  if (lastProductionTestUser === session.user.id) return;
+  lastProductionTestUser = session.user.id;
+
+  const { data, error } = await supabaseClient
+    .from("production_daily")
+    .select("*")
+    .order("report_date", { ascending: false })
+    .limit(10);
+
+  if (error) {
+    lastProductionTestUser = null;
+    console.error("Supabase error:", error);
+    showMessage(error.message, true);
+    return;
+  }
+
+  console.table(data);
+  showMessage(
+    `Database connected. ${data.length} production records found.`
+  );
+}
 // SESSION
 function setAuthenticated(session) {
-  document.body.classList.toggle("authenticated", Boolean(session));
+  document.body.classList.toggle(
+    "authenticated",
+    Boolean(session)
+  );
+
+  if (session) {
+    testProductionConnection(session);
+  }
 
   let logout = document.getElementById("logoutButton");
 
@@ -457,15 +490,21 @@ function setAuthenticated(session) {
     logout.id = "logoutButton";
     logout.className = "lang";
     logout.textContent = "Logout";
+
     document.querySelector(".top").appendChild(logout);
 
     logout.addEventListener("click", async () => {
       const { error } = await supabaseClient.auth.signOut();
-      if (error) showMessage(error.message, true);
+
+      if (error) {
+        showMessage(error.message, true);
+      }
     });
   }
 
-  if (!session && logout) logout.remove();
+  if (!session && logout) {
+    logout.remove();
+  }
 }
 
 // RESTORE SESSION
