@@ -263,29 +263,59 @@ body:not(.authenticated) .auth-screen {
 </div>
 </div>
 
-<div id="planning" class="module">
-<h2>Mine Planning | Perencanaan Tambang</h2>
-<div class="panel">Life of Mine (LOM), Pit Design, Pushback, Mine Schedule and Reserve Planning.</div>
-</div>
 <div id="production" class="module">
-<h2>Production Review | Review Produksi</h2>
-<div class="panel">Daily Production, Weekly Review, Monthly Review and P1–P11 monitoring.</div>
-</div>
-<div id="materials" class="module">
-<h2>Material Balance | Neraca Material</h2>
-<div class="panel">Saprolite, LIM, Waste, Opening Stock, Mining, Hauling and Closing Stock.</div>
-</div>
-<div id="fleet" class="module">
-<h2>Fleet Productivity | Produktivitas Armada</h2>
-<div class="panel">Excavator, Dump Truck, Availability, Utilization, Cycle Time and Productivity.</div>
-</div>
-<div id="reclamation" class="module">
-<h2>Reclamation | Reklamasi</h2>
-<div class="panel">Land Preparation, Topsoil Spreading, Cut & Fill, Plan vs Actual.</div>
-</div>
-<div id="reports" class="module">
-<h2>Reports | Laporan</h2>
-<div class="panel">Daily, Weekly, Monthly and Yearly Mining Reports.</div>
+
+  <h2>Production Review | Review Produksi</h2>
+
+  <div class="kpis">
+    <div class="card">
+      <div class="sub">Plan Production (WMT)</div>
+      <h2 id="prodPlan">0</h2>
+    </div>
+
+    <div class="card">
+      <div class="sub">Actual Production (WMT)</div>
+      <h2 id="prodActual">0</h2>
+    </div>
+
+    <div class="card">
+      <div class="sub">Achievement (%)</div>
+      <h2 id="prodAchievement">0%</h2>
+    </div>
+
+    <div class="card">
+      <div class="sub">Production Records</div>
+      <h2 id="prodRecords">0</h2>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Daily Production | Produksi Harian</h3>
+
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Shift</th>
+            <th>Contractor</th>
+            <th>Pit</th>
+            <th>Material</th>
+            <th>Plan WMT</th>
+            <th>Actual WMT</th>
+            <th>Achievement</th>
+          </tr>
+        </thead>
+
+        <tbody id="productionTableBody">
+          <tr>
+            <td colspan="8">Loading production data...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 
 <div class="footer">MINE PLAN ENGINEERING DASHBOARD | NICKEL MINING OPERATIONS | VERSION 2.0</div>
@@ -445,7 +475,7 @@ document.getElementById("registerFormElement")
     );
   }
 });
-// TEST SUPABASE PRODUCTION CONNECTION
+// LOAD PRODUCTION DATA FROM SUPABASE
 let lastProductionTestUser = null;
 
 async function testProductionConnection(session) {
@@ -457,8 +487,7 @@ async function testProductionConnection(session) {
   const { data, error } = await supabaseClient
     .from("production_daily")
     .select("*")
-    .order("report_date", { ascending: false })
-    .limit(10);
+    .order("report_date", { ascending: false });
 
   if (error) {
     lastProductionTestUser = null;
@@ -467,10 +496,74 @@ async function testProductionConnection(session) {
     return;
   }
 
-  console.table(data);
-  showMessage(
-    `Database connected. ${data.length} production records found.`
+  const records = data || [];
+
+  const totalPlan = records.reduce(
+    (sum, row) => sum + Number(row.plan_wmt || 0), 0
   );
+
+  const totalActual = records.reduce(
+    (sum, row) => sum + Number(row.actual_wmt || 0), 0
+  );
+
+  const achievement = totalPlan > 0
+    ? (totalActual / totalPlan) * 100
+    : 0;
+
+  document.getElementById("prodPlan").textContent =
+    totalPlan.toLocaleString("en-US");
+
+  document.getElementById("prodActual").textContent =
+    totalActual.toLocaleString("en-US");
+
+  document.getElementById("prodAchievement").textContent =
+    achievement.toFixed(2) + "%";
+
+  document.getElementById("prodRecords").textContent =
+    records.length.toLocaleString("en-US");
+
+  const tbody = document.getElementById("productionTableBody");
+  tbody.replaceChildren();
+
+  if (records.length === 0) {
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = 8;
+    td.textContent = "No production data available";
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  }
+
+  records.forEach(row => {
+    const tr = document.createElement("tr");
+
+    const values = [
+      row.report_date,
+      row.shift,
+      row.contractor,
+      row.pit,
+      row.material,
+      Number(row.plan_wmt || 0).toLocaleString("en-US"),
+      Number(row.actual_wmt || 0).toLocaleString("en-US"),
+      Number(row.plan_wmt) > 0
+        ? ((Number(row.actual_wmt || 0) /
+            Number(row.plan_wmt)) * 100).toFixed(2) + "%"
+        : "0%"
+    ];
+
+    values.forEach(value => {
+      const td = document.createElement("td");
+      td.textContent = value ?? "-";
+      td.style.padding = "10px";
+      td.style.borderBottom = "1px solid #293d56";
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  console.table(records);
+  showMessage(`Database connected. ${records.length} production records found.`);
 }
 // SESSION
 function setAuthenticated(session) {
