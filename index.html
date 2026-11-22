@@ -93,7 +93,7 @@
 <section id="destination" class="module">
 <div class="section"><h2>Destination Master</h2><div class="muted">Master TOS, Waste Dump dan kapasitas desain destination.</div></div>
 <div class="panel section"><form id="dumpForm"><div class="formgrid"><div class="field"><label>Destination ID</label><input name="dump_id" required></div><div class="field"><label>Destination Name</label><input name="dump_name" required></div><div class="field"><label>Pit</label><input name="pit"></div><div class="field"><label>Type</label><select name="dump_type"><option value="Ore Stockpile">Ore Stockpile</option><option value="Waste Dump">Waste Dump</option></select></div><div class="field"><label>Capacity WMT</label><input name="capacity_wmt" type="number" min="0" step="0.01"></div><div class="field"><label>Capacity BCM</label><input name="capacity_bcm" type="number" min="0" step="0.01"></div><div class="field"><label>Status</label><select name="status"><option>Active</option><option>Inactive</option><option>Full</option></select></div><div class="field"><label>Notes</label><input name="notes"></div></div><div class="toolbar"><button class="btn">Save Destination</button></div><div class="muted">Dump type mengikuti constraint database: Ore Stockpile atau Waste Dump.</div></form></div>
-<div class="panel section"><h3>Destination Capacity Monitoring V2.7</h3><div class="muted">Monitoring kapasitas mengutamakan transaksi aktual dari dump_daily per destination. Jika destination belum memiliki movement pada periode terpilih, sistem menggunakan saldo terakhir material_balance_daily. Kapasitas desain diambil dari dump_master. Forecast memakai rata-rata incoming harian pada periode terpilih.</div>
+<div class="panel section"><h3>Destination Capacity Monitoring V2.8</h3><div class="muted">Monitoring kapasitas mengutamakan transaksi aktual dari dump_daily per destination. Jika destination belum memiliki movement pada periode terpilih, sistem menggunakan saldo terakhir material_balance_daily. Kapasitas desain diambil dari dump_master. Forecast memakai rata-rata incoming harian pada periode terpilih.</div>
 <div class="capacity-summary"><div class="card"><div class="label">Destinations Monitored</div><div class="value" id="dcCount">0</div></div><div class="card"><div class="label">Normal</div><div class="value green" id="dcNormal">0</div></div><div class="card"><div class="label">Warning ≥ 80%</div><div class="value amber" id="dcWarning">0</div></div><div class="card"><div class="label">Critical ≥ 90%</div><div class="value red" id="dcCritical">0</div></div></div>
 <div class="capacity-summary"><div class="card"><div class="label">Total Capacity WMT</div><div class="value" id="dcCapacity">N/A</div></div><div class="card"><div class="label">Current Closing WMT</div><div class="value" id="dcClosing">N/A</div></div><div class="card"><div class="label">Remaining Capacity WMT</div><div class="value" id="dcRemaining">N/A</div></div><div class="card"><div class="label">Average Net Incoming / Day</div><div class="value" id="dcNetDaily">N/A</div></div></div>
 <div class="notice">Status: NORMAL di bawah 80%, WARNING mulai 80%, CRITICAL mulai 90%. Forecast tidak ditampilkan jika net incoming harian nol/negatif atau kapasitas tidak tersedia. Angka kapasitas harus menggunakan data desain yang telah disetujui.</div>
@@ -138,12 +138,12 @@ let daily={};prod.forEach(r=>{let d=r.report_date||'N/A';daily[d]??={p:0,a:0};da
 setTable('dashSummary',['Material','Plan WMT','Actual WMT','Achievement'],materialOrder.map(m=>{let rows=prod.filter(x=>normalizeMaterial(x.material)===m),mp=sum(rows,'plan_wmt'),ma=sum(rows,'actual_wmt');return [m,rows.length?fmt(mp):'N/A',rows.length?fmt(ma):'N/A',mp?fmt(ma/mp*100)+'%':'N/A']}));let fleetGroups={};fleet.forEach(r=>{let k=r.equipment_type||'Unspecified';fleetGroups[k]??={units:new Set(),hours:0,bcm:0,wmt:0,records:0};if(r.equipment_id)fleetGroups[k].units.add(r.equipment_id);fleetGroups[k].hours+=Number(r.operating_hours||0);fleetGroups[k].bcm+=Number(r.bcm||0);fleetGroups[k].wmt+=Number(r.wmt||0);fleetGroups[k].records++});setTable('fleetSummary',['Equipment Type','Units','Operating Hours','BCM','WMT','Records'],Object.entries(fleetGroups).map(([k,v])=>[k,v.units.size,fmt(v.hours),fmt(v.bcm),fmt(v.wmt),v.records]));setTable('actualTable',['Date','Shift','Contractor','Pit','Material','Plan WMT','Actual WMT','Achievement'],prod.map(r=>[r.report_date,r.shift,r.contractor,r.pit,normalizeMaterial(r.material),fmt(r.plan_wmt),fmt(r.actual_wmt),r.plan_wmt?fmt(r.actual_wmt/r.plan_wmt*100)+'%':'N/A']));setTable('planTable',['Date','Pit','Location','Material','Plan BCM','Actual BCM','Plan WMT','Actual WMT'],plan.map(r=>[r.report_date,r.pit,r.location,normalizeMaterial(r.material),fmt(r.plan_bcm),fmt(r.actual_bcm),fmt(r.plan_wmt),fmt(r.actual_wmt)]));
 let prodTotal=sum(prod,'actual_wmt'),haulingFleet=fleet.filter(r=>Number(r.bcm||0)!==0||Number(r.wmt||0)!==0);
 renderTmm(prod,haulingFleet,dump);
-renderMaterialBalance(balance,master);setTable('destinationTable',['ID','Name','Pit','Type','Capacity WMT','Capacity BCM','Status'],master.map(r=>[r.dump_id,r.dump_name,r.pit,r.dump_type,fmt(r.capacity_wmt),fmt(r.capacity_bcm),r.status]));renderDestinationCapacity(master,balance,dump);renderForecastReporting(prod,fleet,dump,master);setTable('reportTable',['Metric','Value'],[['Production Plan WMT',prod.length?fmt(sum(prod,'plan_wmt')):'N/A'],['Production Actual WMT',prod.length?fmt(sum(prod,'actual_wmt')):'N/A'],['Hauling WMT',fleet.length?fmt(haulWmt):'N/A'],['Destination WMT',dump.length?fmt(destWmt):'N/A'],['Fleet BCM',fleet.length?fmt(sum(fleet,'bcm')):'N/A'],['Dump BCM',dump.length?fmt(sum(dump,'actual_bcm')):'N/A'],['Reclamation Actual Area (ha)',cache.recl.length?fmt(sum(cache.recl,'actual_area_ha')):'N/A']]);
+renderMaterialBalance(balance,master);setTable('destinationTable',['ID','Name','Pit','Type','Capacity WMT','Capacity BCM','Status'],master.map(r=>[r.dump_id,r.dump_name,r.pit,r.dump_type,fmt(r.capacity_wmt),fmt(r.capacity_bcm),r.status]));renderDestinationCapacity(master,balance,dump);renderForecastReporting(prod,fleet,dump,master,cache.balance);setTable('reportTable',['Metric','Value'],[['Production Plan WMT',prod.length?fmt(sum(prod,'plan_wmt')):'N/A'],['Production Actual WMT',prod.length?fmt(sum(prod,'actual_wmt')):'N/A'],['Hauling WMT',fleet.length?fmt(haulWmt):'N/A'],['Destination WMT',dump.length?fmt(destWmt):'N/A'],['Fleet BCM',fleet.length?fmt(sum(fleet,'bcm')):'N/A'],['Dump BCM',dump.length?fmt(sum(dump,'actual_bcm')):'N/A'],['Reclamation Actual Area (ha)',cache.recl.length?fmt(sum(cache.recl,'actual_area_ha')):'N/A']]);
 }
 
 
 let forecastExportRows=[];
-function renderForecastReporting(prod,fleet,dump,master){
+function renderForecastReporting(prod,fleet,dump,master,balance){
  const n=v=>Number.isFinite(Number(v))?Number(v):0;
  const sumBy=(rows,key)=>rows.reduce((a,r)=>a+n(r[key]),0);
  const actual=sumBy(prod,'actual_wmt'),plan=sumBy(prod,'plan_wmt');
@@ -169,20 +169,44 @@ function renderForecastReporting(prod,fleet,dump,master){
  });
  setTable('forecastMaterialTable',['Material','Plan WMT','Actual WMT','Achievement','Production Days','Average / Day WMT','Forecast 30 Days WMT','Remaining Plan WMT'],materialRows);
 
- // Destination projection uses dump_daily as the movement source and dump_master for
- // the official destination name, pit and design capacity. No movement => no forecast.
- const byId=new Map();
+ // Destination projection follows the same source priority as Destination Capacity:
+ // dump_daily actual movement first; if no movement exists for a destination,
+ // use the latest closing snapshot from material_balance_daily.
+ const movementById=new Map();
  dump.forEach(r=>{
    const id=String(r.dump_id||'').trim();if(!id)return;
-   if(!byId.has(id))byId.set(id,{wmt:0,bcm:0,dates:new Set(),lastDate:'',materials:new Set()});
-   const g=byId.get(id);g.wmt+=n(r.actual_wmt);g.bcm+=n(r.actual_bcm);
+   if(!movementById.has(id))movementById.set(id,{closing:0,incoming:0,outgoing:0,dates:new Set(),lastDate:'',materials:new Set(),source:'DUMP DAILY'});
+   const g=movementById.get(id);g.closing+=n(r.actual_wmt);g.incoming+=n(r.actual_wmt);
    if(r.movement_date){const d=String(r.movement_date);g.dates.add(d);if(d>g.lastDate)g.lastDate=d}
    if(r.material)g.materials.add(normalizeMaterial(r.material));
  });
+ const balanceGroups=new Map();
+ (balance||[]).forEach(r=>{
+   const id=String(r.destination||'').trim();if(!id)return;
+   const k=[id,r.pit||'',normalizeMaterial(r.material)].join('|');
+   if(!balanceGroups.has(k))balanceGroups.set(k,[]);
+   balanceGroups.get(k).push(r);
+ });
+ const balanceById=new Map();
+ balanceGroups.forEach(list=>{
+   list.sort((a,b)=>String(a.report_date).localeCompare(String(b.report_date)));
+   const first=list[0],last=list[list.length-1],id=String(last.destination);
+   if(!balanceById.has(id))balanceById.set(id,{closing:0,incoming:0,outgoing:0,dates:new Set(),lastDate:'',materials:new Set(),source:'MATERIAL BALANCE'});
+   const g=balanceById.get(id);
+   const closing=last.closing_wmt!==null&&last.closing_wmt!==undefined&&last.closing_wmt!==''?
+     n(last.closing_wmt):n(last.opening_wmt)+n(last.mined_wmt)-n(last.hauled_wmt);
+   g.closing+=closing;
+   g.incoming+=list.reduce((a,r)=>a+n(r.mined_wmt),0);
+   g.outgoing+=list.reduce((a,r)=>a+n(r.hauled_wmt),0);
+   list.forEach(r=>{if(r.report_date)g.dates.add(String(r.report_date))});
+   const ld=String(last.report_date||'');if(ld>g.lastDate)g.lastDate=ld;
+   if(last.material)g.materials.add(normalizeMaterial(last.material));
+ });
  const destRows=master.filter(m=>String(m.status||'Active').toLowerCase()!=='inactive').map(m=>{
-   const id=String(m.dump_id),g=byId.get(id),cap=n(m.capacity_wmt);
-   const closing=g?g.wmt:0,remaining=cap>0?Math.max(0,cap-closing):null;
-   const days=g?g.dates.size:0,daily=days?closing/days:null;
+   const id=String(m.dump_id),g=movementById.get(id)||balanceById.get(id),cap=n(m.capacity_wmt);
+   const closing=g?g.closing:0,remaining=cap>0?Math.max(0,cap-closing):null;
+   const days=g?g.dates.size:0;
+   const daily=g?(g.source==='DUMP DAILY'?(days?g.incoming/days:null):(days?(g.incoming-g.outgoing)/days:null)):null;
    const util=cap>0?closing/cap*100:null;
    const risk=util===null?'NO CAPACITY':util>=90?'CRITICAL':util>=80?'WARNING':'NORMAL';
    let full='No movement forecast';
@@ -190,15 +214,16 @@ function renderForecastReporting(prod,fleet,dump,master){
    else if(cap>0&&daily>0&&g&&g.lastDate){
      const daysToFull=Math.ceil(remaining/daily),dt=new Date(g.lastDate+'T00:00:00Z');
      dt.setUTCDate(dt.getUTCDate()+daysToFull);full=dt.toISOString().slice(0,10)+' ('+daysToFull+' days)';
-   }
-   return [id,m.dump_name||id,m.pit||'—',g?[...g.materials].sort().join(', '):'No movement data',fmt(cap),g?fmt(closing):'0',remaining===null?'N/A':fmt(remaining),util===null?'N/A':fmt(util)+'%',risk,daily===null?'N/A':fmt(daily),full];
+   }else if(cap<=0)full='Capacity unavailable';
+   const source=g?g.source:'NO DATA';
+   return [id,m.dump_name||id,m.pit||'—',g?[...g.materials].sort().join(', '):'No movement data',fmt(cap),g?fmt(closing):'0',remaining===null?'N/A':fmt(remaining),util===null?'N/A':fmt(util)+'%',risk,daily===null||daily<=0?'N/A':fmt(daily),full,source];
  });
- setTable('forecastDestinationTable',['Destination ID','Name','Pit','Material','Capacity WMT','Movement WMT','Remaining WMT','Utilization','Status','Average / Day WMT','Forecast Full'],destRows);
+ setTable('forecastDestinationTable',['Destination ID','Name','Pit','Material','Capacity WMT','Closing WMT','Remaining WMT','Utilization','Status','Average / Day WMT','Forecast Full','Balance Source'],destRows);
  const riskCount=destRows.filter(r=>r[8]==='WARNING'||r[8]==='CRITICAL').length;
  $('frCapacityRisk').textContent=String(riskCount);
- forecastExportRows=[['Section','Material / Destination','Pit','Plan WMT','Actual / Movement WMT','Achievement / Utilization','Average / Day WMT','Forecast 30 Days / Forecast Full','Remaining WMT']];
+ forecastExportRows=[['Section','Material / Destination','Pit','Plan WMT','Actual / Closing WMT','Achievement / Utilization','Average / Day WMT','Forecast 30 Days / Forecast Full','Remaining WMT','Balance Source']];
  materialRows.forEach(r=>forecastExportRows.push(['PRODUCTION',r[0],'',r[1],r[2],r[3],r[5],r[6],r[7]]));
- destRows.forEach(r=>forecastExportRows.push(['DESTINATION',r[0]+' - '+r[1],r[2],r[4],r[5],r[7],r[9],r[10],r[6]]));
+ destRows.forEach(r=>forecastExportRows.push(['DESTINATION',r[0]+' - '+r[1],r[2],r[4],r[5],r[7],r[9],r[10],r[6],r[11]]));
 }
 
 function renderDestinationCapacity(master,balance,dump){
