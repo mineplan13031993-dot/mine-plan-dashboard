@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mine Plan Engineering Dashboard V2.6</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#091321;--side:#101f32;--panel:#14263d;--line:#2b405b;--muted:#91a6bf;--txt:#e9f0f8;--green:#39c49a;--blue:#4d94e5;--amber:#e9b85d;--red:#ef7777}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px Arial,sans-serif}.sidebar{position:fixed;inset:0 auto 0 0;width:235px;background:var(--side);border-right:1px solid var(--line);padding:20px 12px;overflow:auto}.brand{font-size:19px;font-weight:bold;padding:10px;margin-bottom:20px}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:2px;margin-top:6px}.nav{width:100%;text-align:left;background:none;border:0;color:#b4c3d4;padding:13px 12px;margin:3px 0;border-radius:7px;cursor:pointer}.nav:hover,.nav.active{background:#24466a;color:white}.main{margin-left:235px;padding:25px;max-width:1700px}.top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:17px;gap:15px}.top h1{margin:5px 0;font-size:25px}.sub,.muted{color:var(--muted);font-size:12px}.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.btn,button,select,input{font:inherit}.btn{background:#245b8e;color:white;border:1px solid #3a75a9;border-radius:7px;padding:9px 13px;cursor:pointer}.btn.secondary{background:#1b304a;border-color:var(--line)}.btn.danger{background:#783c45;border-color:#96515b}.section{margin-top:22px}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-top:16px}.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:17px;min-width:0}.card .label{font-size:11px;color:var(--muted);text-transform:uppercase}.value{font-size:26px;font-weight:bold;margin:12px 0}.green{color:var(--green)}.amber{color:var(--amber)}.red{color:var(--red)}.grid{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-top:15px}.module{display:none}.module.active{display:block}.panel h3{margin:0 0 12px;font-size:15px}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:650px;font-size:12px}th,td{padding:10px 9px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}th{color:var(--muted);font-weight:600}.formgrid{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:10px}.field label{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}.field input,.field select{width:100%;background:#0b192a;color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:10px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.toolbar input,.toolbar select{background:#0b192a;color:var(--txt);border:1px solid var(--line);padding:9px;border-radius:6px}.modulehead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.chartbox{height:280px}.mbfilters label{display:flex;align-items:center;gap:6px}.mbfilters select{background:#0b192a;color:var(--txt);border:1px solid var(--line);padding:9px;border-radius:6px;min-width:140px}.tmmfilters select{background:#0b192a;color:var(--txt);border:1px solid var(--line);padding:9px;border-radius:6px;min-width:150px}.notice{padding:10px 12px;border-radius:7px;background:#172d45;color:#b8cce0;margin:12px 0;font-size:12px}.auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.auth-card{width:100%;max-width:410px;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:28px}.auth-card h2{text-align:center}.auth-card input{width:100%;padding:12px;margin:7px 0 14px;background:#0b192a;border:1px solid var(--line);border-radius:6px;color:white}.auth-card label{font-size:12px;color:var(--muted)}body:not(.authenticated) .sidebar,body:not(.authenticated) .main{display:none}body.authenticated .auth-screen{display:none}.footer{color:#7188a3;font-size:11px;margin:30px 0}.empty{color:var(--muted);padding:20px;text-align:center}.hidden{display:none!important}@media(max-width:1000px){.sidebar{width:68px;padding:12px 5px}.brand{font-size:0;padding:8px 4px}.brand:before{content:'MP';font-size:17px}.brand small{display:none}.nav{font-size:0;text-align:center;padding:13px 4px}.nav: first-letter{font-size:18px}.main{margin-left:68px;padding:15px}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:1fr}}@media(max-width:600px){.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.card{padding:12px}.value{font-size:20px}.main{padding:11px}.top h1{font-size:19px}.formgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.capacity-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}
+.capacity-bar{height:9px;background:#0b192a;border:1px solid var(--line);border-radius:99px;overflow:hidden;min-width:100px}
+.capacity-bar>span{display:block;height:100%;border-radius:99px;background:var(--green)}
+.capacity-bar>span.warning{background:var(--amber)}.capacity-bar>span.critical{background:var(--red)}
+.capacity-status{font-weight:bold;white-space:nowrap}.capacity-status.normal{color:var(--green)}.capacity-status.warning{color:var(--amber)}.capacity-status.critical{color:var(--red)}
+.capacity-cell{display:flex;align-items:center;gap:9px;min-width:170px}.capacity-cell small{color:var(--muted);white-space:nowrap}
+@media(max-width:1000px){.capacity-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.capacity-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style></head><body>
+<div class="auth-screen"><div class="auth-card"><h2>MINE PLAN ENGINEERING</h2><p class="muted" style="text-align:center">Nickel Mining Operations Platform</p><form id="loginForm"><label>Email</label><input id="email" type="email" required><label>Password</label><input id="password" type="password" required><button class="btn" style="width:100%">LOGIN</button></form><div id="authMsg" class="notice"></div></div></div>
+<aside class="sidebar"><div class="brand">MINE PLAN<small>ENGINEERING PLATFORM</small></div>
+<button class="nav active" data-page="dashboard">▦ Dashboard</button><button class="nav" data-page="input">▣ Input Data</button><button class="nav" data-page="plan">⌖ Plan Production</button><button class="nav" data-page="actual">▤ Actual Production</button><button class="nav" data-page="tmm">⇄ TMM Reconciliation</button><button class="nav" data-page="balance">◈ Material Balance</button><button class="nav" data-page="destination">▤ Destination Master</button><button class="nav" data-page="forecast">▥ Forecast & Reporting</button></aside>
+<main class="main"><header class="top"><div><div class="sub">MINE PLAN ENGINEERING / NICKEL OPERATIONS</div><h1 id="pageTitle">Dashboard</h1><div class="sub" id="status">Connecting to operational database...</div></div><div class="actions"><input type="date" id="fromDate" title="From date"><input type="date" id="toDate" title="To date"><button class="btn secondary" id="refresh">Refresh</button><button class="btn secondary" id="logout">Logout</button></div></header>
+<section id="dashboard" class="module active"><div class="section"><div class="sub">LIVE OPERATIONAL DATA · FILTERED PERIOD</div><h2>Executive Performance</h2></div><div class="cards"><div class="card"><div class="label">Ore Production</div><div class="value" id="kOre">-</div><div class="muted">Actual WMT</div></div><div class="card"><div class="label">Waste Movement</div><div class="value" id="kWaste">-</div><div class="muted">Actual BCM</div></div><div class="card"><div class="label">Plan Achievement</div><div class="value" id="kAch">-</div><div class="muted">Actual / Plan WMT</div></div><div class="card"><div class="label">Fleet Operating Hours</div><div class="value" id="kHours">-</div><div class="muted">Operating hours</div></div></div><div class="cards"><div class="card"><div class="label">Fleet Movement</div><div class="value" id="kFleetWmt">-</div><div class="muted">Hauling WMT · fleet_daily</div></div><div class="card"><div class="label">Fleet Movement</div><div class="value" id="kFleetBcm">-</div><div class="muted">Hauling BCM · fleet_daily</div></div><div class="card"><div class="label">Active Equipment IDs</div><div class="value" id="kEquipment">-</div><div class="muted">Unique equipment in period</div></div><div class="card"><div class="label">Fleet Records</div><div class="value" id="kFleetRecords">-</div><div class="muted">Records in selected period</div></div></div><div class="grid"><div class="panel"><h3>Production Plan vs Actual (WMT)</h3><div class="chartbox"><canvas id="prodChart"></canvas></div></div><div class="panel"><h3>Material Distribution (Actual WMT)</h3><div class="chartbox"><canvas id="materialChart"></canvas></div></div></div><div class="grid"><div class="panel"><h3>Operational Data Summary</h3><div id="dashSummary" class="tablewrap"></div></div><div class="panel"><h3>Fleet Equipment Summary</h3><div id="fleetSummary" class="tablewrap"></div></div></div></section>
+<section id="input" class="module"><div class="modulehead section"><div><h2>Input Data Operasional</h2><div class="muted">Input transaksi ke tabel Supabase yang tersedia.</div></div></div><div class="panel section"><h3>Production Daily Input</h3><form id="productionForm"><div class="formgrid">
+<div class="field"><label>Report Date</label><input name="report_date" type="date" required></div><div class="field"><label>Shift</label><select name="shift"><option value="Day">Day</option><option value="Night">Night</option></select></div><div class="field"><label>Contractor</label><input name="contractor"></div><div class="field"><label>Pit</label><input name="pit"></div><div class="field"><label>Material</label><select name="material"><option>SAP</option><option>LIM</option><option>WST</option><option>TMM</option></select></div><div class="field"><label>Plan WMT</label><input name="plan_wmt" type="number" step="0.01" min="0"></div><div class="field"><label>Actual WMT</label><input name="actual_wmt" type="number" step="0.01" min="0"></div><div class="field"><label>Remarks</label><input name="remarks"></div></div><div class="toolbar"><button class="btn">Save Production</button><button type="reset" class="btn secondary">Clear</button></div></form><div id="inputMsg" class="notice">Input tersimpan ke production_daily setelah berhasil disimpan.</div></div>
+<div class="panel section"><h3>Import CSV – Production</h3><p class="muted">Header wajib: report_date,shift,contractor,pit,material,plan_wmt,actual_wmt. Maksimal 500 baris per impor.</p><input type="file" id="csvFile" accept=".csv,text/csv"><button class="btn" id="importCsv">Import CSV</button><button class="btn secondary" id="csvTemplate">Download Template</button></div>
+<div class="panel section"><h3>Fleet Daily Input</h3><p class="muted">Input fleet harian sesuai tabel fleet_daily. Data hauling dari fleet harus mewakili movement aktual dan tidak boleh diduplikasi dengan dump_daily.</p><form id="fleetForm"><div class="formgrid">
+<div class="field"><label>Report Date</label><input name="report_date" type="date" required></div>
+<div class="field"><label>Shift</label><select name="shift"><option value="DS">DS</option><option value="NS">NS</option></select></div>
+<div class="field"><label>Contractor</label><input name="contractor" required></div><div class="field"><label>Pit</label><input name="pit" required></div><div class="field"><label>Material</label><select name="material"><option value="">Select Material (hauling only)</option><option>SAP</option><option>LIM</option><option>WST</option></select></div><div class="field"><label>Destination ID</label><input name="destination_id" list="destinationOptions" placeholder="e.g. DMP-001 (hauling only)"><datalist id="destinationOptions"></datalist></div>
+<div class="field"><label>Equipment Type</label><select name="equipment_type"><option>Excavator</option><option>ADT</option><option>Dump Truck</option><option>Dozer</option><option>Water Truck</option><option>Other</option></select></div>
+<div class="field"><label>Equipment ID</label><input name="equipment_id"></div><div class="field"><label>Operating Hours</label><input name="operating_hours" type="number" min="0" step="0.01"></div>
+<div class="field"><label>Standby Hours</label><input name="standby_hours" type="number" min="0" step="0.01"></div><div class="field"><label>Breakdown Hours</label><input name="breakdown_hours" type="number" min="0" step="0.01"></div>
+<div class="field"><label>BCM</label><input name="bcm" type="number" min="0" step="0.01"></div><div class="field"><label>WMT</label><input name="wmt" type="number" min="0" step="0.01"></div>
+<div class="field"><label>Cycle Time (min)</label><input name="cycle_time" type="number" min="0" step="0.01"></div><div class="field"><label>Remarks</label><input name="remarks"></div>
+</div><div class="toolbar"><button class="btn">Save Fleet Record</button><button type="reset" class="btn secondary">Clear</button></div></form><div id="fleetMsg" class="notice">Fleet record akan disimpan ke fleet_daily.</div></div>
+<div class="panel section"><h3>Import Fleet Excel / CSV</h3><p class="muted">Kolom wajib untuk rekonsiliasi: report_date, contractor, pit, material, destination_id, equipment_type, equipment_id. Kolom lain: shift, operating_hours, standby_hours, breakdown_hours, bcm, wmt, cycle_time, remarks. Maksimal 1.000 baris.</p><input type="file" id="fleetFile" accept=".csv,.xlsx,.xls"><div class="toolbar"><button class="btn" id="importFleet">Import Fleet File</button><button class="btn secondary" id="fleetTemplate">Download Fleet Template</button></div><div id="fleetImportMsg" class="notice">Upload file fleet Anda. Jika nama kolom berbeda, kita sesuaikan mapping setelah memeriksa file asli.</div></div>
+</section>
+<section id="plan" class="module"><div class="modulehead section"><div><h2>Plan Production</h2><div class="muted">Rencana produksi per tanggal, pit, lokasi dan material.</div></div></div><div class="panel section"><form id="planForm"><div class="formgrid"><div class="field"><label>Date</label><input name="report_date" type="date" required></div><div class="field"><label>Pit</label><input name="pit"></div><div class="field"><label>Location / Subpit</label><input name="location"></div><div class="field"><label>Material</label><select name="material"><option>SAP</option><option>LIM</option><option>WST</option></select></div><div class="field"><label>Plan BCM</label><input name="plan_bcm" type="number" step="0.01"></div><div class="field"><label>Plan WMT</label><input name="plan_wmt" type="number" step="0.01"></div><div class="field"><label>Remarks</label><input name="remarks"></div></div><div class="toolbar"><button class="btn">Save Plan</button></div></form></div><div class="panel section" id="planTable"></div></section>
+<section id="actual" class="module"><div class="section"><h2>Actual Production</h2><div class="muted">Realisasi produksi dari production_daily.</div></div><div class="cards"><div class="card"><div class="label">Plan WMT</div><div class="value" id="aPlan">-</div></div><div class="card"><div class="label">Actual WMT</div><div class="value" id="aActual">-</div></div><div class="card"><div class="label">Achievement</div><div class="value" id="aAch">-</div></div><div class="card"><div class="label">Records</div><div class="value" id="aCount">-</div></div></div><div class="panel section" id="actualTable"></div></section>
+<section id="tmm" class="module">
+<div class="section"><div class="modulehead"><div><h2>TMM Reconciliation</h2><div class="muted">Rekonsiliasi transaksi menggunakan tanggal + pit + contractor + material + destination.</div></div><button class="btn" id="exportTmmV23">Export TMM Detail CSV</button></div></div>
+<div class="notice"><b>Aturan pencocokan:</b> Production → Hauling memakai tanggal + pit + contractor + material. Hauling → Destination memakai kelima dimensi termasuk destination ID. Production tidak memiliki atribut destination, sehingga destination tidak dipakai pada pencocokan tahap pertama. Baris fleet tanpa material/destination tetap ditampilkan pada daftar unmapped.</div>
+<div class="toolbar tmmfilters">
+<select id="tmmPitFilter"><option value="">All Pits</option></select>
+<select id="tmmContractorFilter"><option value="">All Contractors</option></select>
+<select id="tmmMaterialFilter"><option value="">All Materials</option><option value="SAP">SAP</option><option value="LIM">LIM</option><option value="WST">WST</option></select>
+<select id="tmmDestinationFilter"><option value="">All Destinations</option></select>
+<button class="btn secondary" id="resetTmmFilters">Reset TMM Filters</button>
+</div>
+<div class="cards">
+<div class="card"><div class="label">Production WMT</div><div class="value" id="tProd">-</div></div>
+<div class="card"><div class="label">Hauling WMT</div><div class="value" id="tHaul">-</div></div>
+<div class="card"><div class="label">Destination WMT</div><div class="value" id="tDest">-</div></div>
+<div class="card"><div class="label">Unmapped Fleet Records</div><div class="value" id="tUnmapped">-</div></div>
+</div>
+<div class="cards">
+<div class="card"><div class="label">Balanced Matches</div><div class="value green" id="tBalanced">0</div></div>
+<div class="card"><div class="label">Variance Matches</div><div class="value amber" id="tVariance">0</div></div>
+<div class="card"><div class="label">No Match</div><div class="value red" id="tNoMatch">0</div></div>
+<div class="card"><div class="label">5D Balance Rate</div><div class="value" id="tAchievement">N/A</div><div class="muted">Balanced / all 5D comparison keys</div></div>
+</div>
+<div class="panel section"><h3>1. Production vs Hauling — Date + Pit + Contractor + Material</h3><div class="muted">Hauling ber-material tetap dapat dicocokkan walaupun destination belum terisi.</div><div id="tmmProductionTable" class="tablewrap"></div></div>
+<div class="panel section"><h3>2. Hauling vs Destination — Full 5-Dimension Match</h3><div id="tmmDestinationTable" class="tablewrap"></div></div>
+<div class="panel section"><h3>3. Unmapped Fleet Transactions</h3><div class="muted">Movement dengan material atau destination yang belum lengkap. Tidak dimasukkan ke pencocokan 5 dimensi.</div><div id="tmmUnmappedTable" class="tablewrap"></div></div>
+</section>
+<section id="balance" class="module">
+<div class="modulehead section"><div><h2>Material Balance Management</h2><div class="muted">Stock ledger per date + pit + destination + material. Calculated Closing = Opening + Mined/In − Hauled/Out.</div></div><button class="btn" id="exportBalanceV24">Export Material Balance CSV</button></div>
+<div class="notice"><b>Basis perhitungan:</b> Data utama diambil dari <code>material_balance_daily</code>. Dashboard tidak membuat transaksi stok dari dump_daily atau fleet_daily secara otomatis agar tidak terjadi double counting. Capacity dan destination type diambil dari <code>dump_master</code>. Jika belum ada record balance, KPI ditampilkan N/A.</div>
+<div class="toolbar mbfilters">
+<label class="muted">Pit <select id="mbPit"><option value="">All Pits</option></select></label>
+<label class="muted">Material <select id="mbMaterial"><option value="">All Materials</option><option value="SAP">SAP</option><option value="LIM">LIM</option><option value="WST">WST</option></select></label>
+<label class="muted">Destination <select id="mbDestination"><option value="">All Destinations</option></select></label>
+<label class="muted">Destination Type <select id="mbType"><option value="">All Types</option><option value="Ore Stockpile">Ore Stockpile</option><option value="Waste Dump">Waste Dump</option></select></label>
+<button class="btn secondary" id="mbReset">Reset Filters</button>
+</div>
+<div class="cards">
+<div class="card"><div class="label">Opening Stock WMT</div><div class="value" id="mbOpening">N/A</div></div>
+<div class="card"><div class="label">Mined / Incoming WMT</div><div class="value" id="mbIncoming">N/A</div></div>
+<div class="card"><div class="label">Hauled / Outgoing WMT</div><div class="value" id="mbOutgoing">N/A</div></div>
+<div class="card"><div class="label">Calculated Closing WMT</div><div class="value" id="mbClosing">N/A</div></div>
+</div>
+<div class="cards">
+<div class="card"><div class="label">Destination Capacity WMT</div><div class="value" id="mbCapacity">N/A</div></div>
+<div class="card"><div class="label">Capacity Remaining WMT</div><div class="value" id="mbRemaining">N/A</div></div>
+<div class="card"><div class="label">Capacity Utilization</div><div class="value" id="mbUtilization">N/A</div></div>
+<div class="card"><div class="label">Balance Records</div><div class="value" id="mbRecords">0</div></div>
+</div>
+<div class="grid">
+<div class="panel"><h3>Daily Closing Stock Timeline (WMT)</h3><div class="chartbox"><canvas id="balanceChartV24"></canvas></div></div>
+<div class="panel"><h3>Material Balance by Destination</h3><div id="mbDestinationSummary" class="tablewrap"></div></div>
+</div>
+<div class="panel section"><h3>Daily Material Balance Ledger</h3><div class="muted">Variance = Calculated Closing − Recorded Closing. Status menunjukkan kesesuaian ledger, bukan status survey stockpile.</div><div id="balanceTableV24" class="tablewrap"></div></div>
+<div class="panel section"><h3>Destination Capacity Register</h3><div id="mbCapacityTable" class="tablewrap"></div></div>
+</section>
+<section id="destination" class="module">
+<div class="section"><h2>Destination Master</h2><div class="muted">Master TOS, Waste Dump dan kapasitas desain destination.</div></div>
+<div class="panel section"><form id="dumpForm"><div class="formgrid"><div class="field"><label>Destination ID</label><input name="dump_id" required></div><div class="field"><label>Destination Name</label><input name="dump_name" required></div><div class="field"><label>Pit</label><input name="pit"></div><div class="field"><label>Type</label><select name="dump_type"><option value="Ore Stockpile">Ore Stockpile</option><option value="Waste Dump">Waste Dump</option></select></div><div class="field"><label>Capacity WMT</label><input name="capacity_wmt" type="number" min="0" step="0.01"></div><div class="field"><label>Capacity BCM</label><input name="capacity_bcm" type="number" min="0" step="0.01"></div><div class="field"><label>Status</label><select name="status"><option>Active</option><option>Inactive</option><option>Full</option></select></div><div class="field"><label>Notes</label><input name="notes"></div></div><div class="toolbar"><button class="btn">Save Destination</button></div><div class="muted">Dump type mengikuti constraint database: Ore Stockpile atau Waste Dump.</div></form></div>
+<div class="panel section"><h3>Destination Capacity Monitoring V2.5</h3><div class="muted">Monitoring kapasitas mengutamakan transaksi aktual dari dump_daily per destination. Jika destination belum memiliki movement pada periode terpilih, sistem menggunakan saldo terakhir material_balance_daily. Kapasitas desain diambil dari dump_master. Forecast memakai rata-rata incoming harian pada periode terpilih.</div>
+<div class="capacity-summary"><div class="card"><div class="label">Destinations Monitored</div><div class="value" id="dcCount">0</div></div><div class="card"><div class="label">Normal</div><div class="value green" id="dcNormal">0</div></div><div class="card"><div class="label">Warning ≥ 80%</div><div class="value amber" id="dcWarning">0</div></div><div class="card"><div class="label">Critical ≥ 90%</div><div class="value red" id="dcCritical">0</div></div></div>
+<div class="capacity-summary"><div class="card"><div class="label">Total Capacity WMT</div><div class="value" id="dcCapacity">N/A</div></div><div class="card"><div class="label">Current Closing WMT</div><div class="value" id="dcClosing">N/A</div></div><div class="card"><div class="label">Remaining Capacity WMT</div><div class="value" id="dcRemaining">N/A</div></div><div class="card"><div class="label">Average Net Incoming / Day</div><div class="value" id="dcNetDaily">N/A</div></div></div>
+<div class="notice">Status: NORMAL di bawah 80%, WARNING mulai 80%, CRITICAL mulai 90%. Forecast tidak ditampilkan jika net incoming harian nol/negatif atau kapasitas tidak tersedia. Angka kapasitas harus menggunakan data desain yang telah disetujui.</div>
+<div id="destinationCapacityTable" class="tablewrap"></div>
+</div>
+<div class="panel section" id="destinationTable"></div></section>
+<section id="forecast" class="module"><div class="section"><h2>Forecast & Reporting</h2><div class="muted">Ringkasan periode terpilih dan estimasi berdasarkan rata-rata aktual harian.</div></div><div class="cards"><div class="card"><div class="label">Actual to Date</div><div class="value" id="fActual">-</div></div><div class="card"><div class="label">Average / Day</div><div class="value" id="fAverage">-</div></div><div class="card"><div class="label">Forecast 30 Days</div><div class="value" id="fForecast">-</div></div><div class="card"><div class="label">Remaining to Plan</div><div class="value" id="fRemain">-</div></div></div><div class="toolbar"><button class="btn" id="exportProduction">Export Production CSV</button><button class="btn secondary" id="exportTmm">Export TMM CSV</button></div><div class="panel section" id="reportTable"></div></section>
+<div class="footer">MINE PLAN ENGINEERING DASHBOARD · OPERATIONAL DATA EDITION · V2.5 · DESTINATION CAPACITY MONITORING</div></main>
+<script>
+const SUPABASE_URL='https://mjerfpzagymscioovzji.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_68Z3BCRyQVYn-X78NBCSGw_oC1Iw_hF';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const $=id=>document.getElementById(id);const fmt=n=>Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2});const sum=(rows,key)=>rows.reduce((s,r)=>s+Number(r[key]||0),0);let cache={prod:[],plan:[],fleet:[],dump:[],master:[],balance:[],recl:[]};let charts={};let sessionUser=null;
+function dateRange(){let from=$('fromDate').value,to=$('toDate').value;return {from:from||'1900-01-01',to:to||'2999-12-31'}}function periodLabel(){let {from,to}=dateRange();return (!$('fromDate').value&&!$('toDate').value)?'All records':`${from} to ${to}`}
+async function fetchTable(table,dateCol){let {from,to}=dateRange();let q=db.from(table).select('*');if(dateCol)q=q.gte(dateCol,from).lte(dateCol,to);let {data,error}=await q.limit(5000);if(error)throw new Error(table+': '+error.message);return data||[]}
+function setTable(el,headers,rows){$(el).innerHTML='<div class="tablewrap"><table><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+(rows.length?rows.map(r=>'<tr>'+r.map(v=>'<td>'+escapeHtml(v??'—')+'</td>').join('')+'</tr>').join(''):'<tr><td colspan="'+headers.length+'" class="empty">No data for selected period</td></tr>')+'</tbody></table></div>'}
+function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function normalizeMaterial(v){let x=String(v||'').trim().toUpperCase();if(['SAPROLITE','SAP'].includes(x))return 'SAP';if(['LIMONITE','LIM'].includes(x))return 'LIM';if(['WASTE','WASTE ROCK','WST'].includes(x))return 'WST';return x||'UNSPECIFIED'}
+function aggregate(rows,key,groupKey){let o={};rows.forEach(r=>{let k=normalizeMaterial(r[groupKey]);o[k]=(o[k]||0)+Number(r[key]||0)});return o}
+function renderChart(id,type,labels,datasets){if(charts[id])charts[id].destroy();if(!window.Chart)return;charts[id]=new Chart($(id),{type,data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#c6d4e4'}}},scales:type==='doughnut'?{}:{x:{ticks:{color:'#91a6bf'},grid:{display:false}},y:{ticks:{color:'#91a6bf'},grid:{color:'#2b405b'}}}}})}
+async function loadAll(){ $('status').textContent='Loading operational data...';let tables=[['prod','production_daily','report_date'],['plan','mine_plan_daily','report_date'],['fleet','fleet_daily','report_date'],['dump','dump_daily','movement_date'],['master','dump_master',null],['balance','material_balance_daily','report_date'],['recl','reclamation_daily','report_date']];let results=await Promise.all(tables.map(async ([key,table,dateCol])=>{try{return [key,await fetchTable(table,dateCol),null]}catch(e){console.error(e);return [key,[],e.message]}}));let errors=[];results.forEach(([key,data,error])=>{cache[key]=data;if(error)errors.push(error)});renderAll();$('status').textContent=errors.length?'Connected with warnings · '+errors.join(' | '):'Connected · Period: '+periodLabel()+' · '+new Date().toLocaleString()}
+function renderAll(){let {prod,plan,fleet,dump,master,balance}=cache;$('destinationOptions').innerHTML=master.map(m=>'<option value=\"'+escapeHtml(m.dump_id)+'\">'+escapeHtml(m.dump_name||m.dump_id)+'</option>').join('');let ore=prod.filter(r=>['SAP','LIM'].includes(normalizeMaterial(r.material)));let wasteDump=dump.filter(r=>normalizeMaterial(r.material)==='WST');let p=sum(ore,'plan_wmt'),a=sum(ore,'actual_wmt');$('kOre').textContent=ore.length?fmt(a)+' WMT':'N/A';$('kWaste').textContent=wasteDump.length?fmt(sum(wasteDump,'actual_bcm'))+' BCM':'N/A';$('kAch').textContent=p?fmt(a/p*100)+'%':'N/A';$('kHours').textContent=fleet.length?fmt(sum(fleet,'operating_hours'))+' h':'N/A';$('kFleetWmt').textContent=fleet.length?fmt(sum(fleet,'wmt'))+' WMT':'N/A';$('kFleetBcm').textContent=fleet.length?fmt(sum(fleet,'bcm'))+' BCM':'N/A';$('kEquipment').textContent=fleet.length?String(new Set(fleet.map(r=>r.equipment_id).filter(Boolean)).size):'N/A';$('kFleetRecords').textContent=fleet.length?fmt(fleet.length):'N/A';$('aPlan').textContent=prod.length?fmt(sum(prod,'plan_wmt')):'N/A';$('aActual').textContent=prod.length?fmt(sum(prod,'actual_wmt')):'N/A';$('aAch').textContent=sum(prod,'plan_wmt')?fmt(sum(prod,'actual_wmt')/sum(prod,'plan_wmt')*100)+'%':'N/A';$('aCount').textContent=fmt(prod.length);
+let daily={};prod.forEach(r=>{let d=r.report_date||'N/A';daily[d]??={p:0,a:0};daily[d].p+=Number(r.plan_wmt||0);daily[d].a+=Number(r.actual_wmt||0)});let dates=Object.keys(daily).sort();renderChart('prodChart','bar',dates,[{label:'Plan WMT',data:dates.map(d=>daily[d].p),backgroundColor:'#4d94e5'},{label:'Actual WMT',data:dates.map(d=>daily[d].a),backgroundColor:'#39c49a'}]);let materialOrder=['SAP','LIM','WST'];let mats=aggregate(prod,'actual_wmt','material');let matValues=materialOrder.map(m=>mats[m]||0);renderChart('materialChart','doughnut',materialOrder,[{data:matValues,backgroundColor:['#4d94e5','#39c49a','#e9b85d']}]);
+setTable('dashSummary',['Material','Plan WMT','Actual WMT','Achievement'],materialOrder.map(m=>{let rows=prod.filter(x=>normalizeMaterial(x.material)===m),mp=sum(rows,'plan_wmt'),ma=sum(rows,'actual_wmt');return [m,rows.length?fmt(mp):'N/A',rows.length?fmt(ma):'N/A',mp?fmt(ma/mp*100)+'%':'N/A']}));let fleetGroups={};fleet.forEach(r=>{let k=r.equipment_type||'Unspecified';fleetGroups[k]??={units:new Set(),hours:0,bcm:0,wmt:0,records:0};if(r.equipment_id)fleetGroups[k].units.add(r.equipment_id);fleetGroups[k].hours+=Number(r.operating_hours||0);fleetGroups[k].bcm+=Number(r.bcm||0);fleetGroups[k].wmt+=Number(r.wmt||0);fleetGroups[k].records++});setTable('fleetSummary',['Equipment Type','Units','Operating Hours','BCM','WMT','Records'],Object.entries(fleetGroups).map(([k,v])=>[k,v.units.size,fmt(v.hours),fmt(v.bcm),fmt(v.wmt),v.records]));setTable('actualTable',['Date','Shift','Contractor','Pit','Material','Plan WMT','Actual WMT','Achievement'],prod.map(r=>[r.report_date,r.shift,r.contractor,r.pit,normalizeMaterial(r.material),fmt(r.plan_wmt),fmt(r.actual_wmt),r.plan_wmt?fmt(r.actual_wmt/r.plan_wmt*100)+'%':'N/A']));setTable('planTable',['Date','Pit','Location','Material','Plan BCM','Actual BCM','Plan WMT','Actual WMT'],plan.map(r=>[r.report_date,r.pit,r.location,normalizeMaterial(r.material),fmt(r.plan_bcm),fmt(r.actual_bcm),fmt(r.plan_wmt),fmt(r.actual_wmt)]));
+let prodTotal=sum(prod,'actual_wmt'),haulingFleet=fleet.filter(r=>Number(r.bcm||0)!==0||Number(r.wmt||0)!==0);
+renderTmm(prod,haulingFleet,dump);
+renderMaterialBalance(balance,master);setTable('destinationTable',['ID','Name','Pit','Type','Capacity WMT','Capacity BCM','Status'],master.map(r=>[r.dump_id,r.dump_name,r.pit,r.dump_type,fmt(r.capacity_wmt),fmt(r.capacity_bcm),r.status]));renderDestinationCapacity(master,balance,dump);let days=new Set(prod.map(r=>r.report_date)).size,avg=days?a/days:0;$('fActual').textContent=prod.length?fmt(a)+' WMT':'N/A';$('fAverage').textContent=days?fmt(avg)+' WMT':'N/A';$('fForecast').textContent=days?fmt(avg*30)+' WMT':'N/A';$('fRemain').textContent=p?fmt(Math.max(0,p-a))+' WMT':'N/A';setTable('reportTable',['Metric','Value'],[['Production Plan WMT',prod.length?fmt(sum(prod,'plan_wmt')):'N/A'],['Production Actual WMT',prod.length?fmt(sum(prod,'actual_wmt')):'N/A'],['Hauling WMT',fleet.length?fmt(haulWmt):'N/A'],['Destination WMT',dump.length?fmt(destWmt):'N/A'],['Fleet BCM',fleet.length?fmt(sum(fleet,'bcm')):'N/A'],['Dump BCM',dump.length?fmt(sum(dump,'actual_bcm')):'N/A'],['Reclamation Actual Area (ha)',cache.recl.length?fmt(sum(cache.recl,'actual_area_ha')):'N/A']]);
+}
+
+
+function renderDestinationCapacity(master,balance,dump){
+ const n=v=>Number.isFinite(Number(v))?Number(v):0;
+ const close=r=>r.closing_wmt!==null&&r.closing_wmt!==undefined&&r.closing_wmt!==''?n(r.closing_wmt):n(r.opening_wmt)+n(r.mined_wmt)-n(r.hauled_wmt);
+
+ // Build fallback snapshots from Material Balance. Used only when a destination
+ // has no dump_daily movement in the selected period; never add both sources.
+ const balanceByDest=new Map();
+ const balanceGroups=new Map();
+ balance.forEach(r=>{
+   const id=String(r.destination||'').trim();
+   if(!id)return;
+   const k=[id,r.pit||'',normalizeMaterial(r.material)].join('|');
+   if(!balanceGroups.has(k))balanceGroups.set(k,[]);
+   balanceGroups.get(k).push(r);
+ });
+ balanceGroups.forEach(list=>{
+   list.sort((a,b)=>String(a.report_date).localeCompare(String(b.report_date)));
+   const first=list[0],last=list[list.length-1],id=String(last.destination||'');
+   if(!balanceByDest.has(id))balanceByDest.set(id,{destination:id,pit:last.pit||first.pit||'',closing:0,incoming:0,outgoing:0,daysSet:new Set(),lastDate:'',materials:[],source:'MATERIAL BALANCE'});
+   const d=balanceByDest.get(id);
+   d.closing+=close(last);
+   d.incoming+=list.reduce((a,r)=>a+n(r.mined_wmt),0);
+   d.outgoing+=list.reduce((a,r)=>a+n(r.hauled_wmt),0);
+   list.forEach(r=>{if(r.report_date)d.daysSet.add(String(r.report_date))});
+   const lastDate=String(last.report_date||'');if(lastDate>d.lastDate)d.lastDate=lastDate;
+   d.materials.push(normalizeMaterial(last.material));
+ });
+
+ // Primary source: destination movement transactions. Sum movement by destination
+ // across pits/materials, retaining unique operating dates for the daily average.
+ const movementByDest=new Map();
+ dump.forEach(r=>{
+   const id=String(r.dump_id||'').trim();
+   if(!id)return;
+   if(!movementByDest.has(id))movementByDest.set(id,{destination:id,pit:r.pit||'',closing:0,incoming:0,outgoing:0,daysSet:new Set(),lastDate:'',materials:[],source:'DUMP DAILY'});
+   const d=movementByDest.get(id);
+   d.closing+=n(r.actual_wmt);
+   d.incoming+=n(r.actual_wmt);
+   d.daysSet.add(String(r.movement_date||''));
+   const dt=String(r.movement_date||'');if(dt>d.lastDate)d.lastDate=dt;
+   if(!d.pit&&r.pit)d.pit=r.pit;
+   d.materials.push(normalizeMaterial(r.material));
+ });
+
+ const byDest=new Map();
+ master.filter(m=>String(m.status||'Active').toLowerCase()!=='inactive').forEach(m=>{
+   const id=String(m.dump_id);
+   const d=movementByDest.get(id)||balanceByDest.get(id)||{
+     destination:id,pit:m.pit||'',closing:0,incoming:0,outgoing:0,daysSet:new Set(),lastDate:'',materials:[],source:'NO MOVEMENT DATA'
+   };
+   byDest.set(id,{...d,days:d.daysSet?d.daysSet.size:0});
+ });
+ const masterRows=master.filter(m=>String(m.status||'Active').toLowerCase()!=='inactive').map(m=>{
+   const d=byDest.get(String(m.dump_id));
+   const cap=n(m.capacity_wmt),remaining=cap>0?cap-d.closing:null,util=cap>0?d.closing/cap*100:null;
+   const net=d.days>0?(d.incoming-d.outgoing)/d.days:null;
+   let status='NO CAPACITY DATA',cls='';
+   if(cap>0){if(util>=90){status='CRITICAL';cls='critical'}else if(util>=80){status='WARNING';cls='warning'}else{status='NORMAL';cls='normal'}}
+   let forecast='N/A';
+   if(cap>0&&remaining<=0)forecast='AT / OVER CAPACITY';
+   else if(cap>0&&net>0&&d.lastDate){
+     const daysToFull=Math.ceil(remaining/net);
+     const dt=new Date(d.lastDate+'T00:00:00Z');dt.setUTCDate(dt.getUTCDate()+daysToFull);
+     forecast=dt.toISOString().slice(0,10)+' ('+fmt(daysToFull)+' days)';
+   }else if(cap>0&&net<=0)forecast='No fill forecast';
+   return {...d,name:m.dump_name||m.dump_id,type:m.dump_type||'—',capacity:cap,remaining,util,net,status,cls,forecast,
+     materials:[...new Set(d.materials)].join(', ')||'No movement data'};
+ }).sort((a,b)=>(b.util??-1)-(a.util??-1));
+
+ const totalCap=masterRows.reduce((a,r)=>a+r.capacity,0);
+ const totalClose=masterRows.reduce((a,r)=>a+r.closing,0);
+ const totalRemain=masterRows.every(r=>r.capacity>0)?masterRows.reduce((a,r)=>a+Math.max(0,r.remaining),0):null;
+ const normal=masterRows.filter(r=>r.status==='NORMAL').length,warning=masterRows.filter(r=>r.status==='WARNING').length,critical=masterRows.filter(r=>r.status==='CRITICAL').length;
+ $('dcCount').textContent=fmt(masterRows.length);
+ $('dcNormal').textContent=fmt(normal);$('dcWarning').textContent=fmt(warning);$('dcCritical').textContent=fmt(critical);
+ $('dcCapacity').textContent=masterRows.length&&masterRows.every(r=>r.capacity>0)?fmt(totalCap):'N/A';
+ $('dcClosing').textContent=fmt(totalClose);
+ $('dcRemaining').textContent=totalRemain===null?'N/A':fmt(totalRemain);
+ const totalDays=Math.max(0,...masterRows.map(r=>r.days));
+ const netAll=totalDays?masterRows.reduce((a,r)=>a+r.incoming-r.outgoing,0)/totalDays:null;
+ $('dcNetDaily').textContent=netAll===null?'N/A':fmt(netAll)+' WMT';
+ const rows=masterRows.map(r=>{
+   const pct=r.util===null?0:Math.max(0,Math.min(100,r.util));
+   const bar='<div class="capacity-cell"><div class="capacity-bar"><span class="'+r.cls+'" style="width:'+pct+'%"></span></div><small>'+(r.util===null?'N/A':fmt(r.util)+'%')+'</small></div>';
+   return [r.destination,r.name,r.type,r.pit||'—',r.materials,r.capacity?fmt(r.capacity):'N/A',fmt(r.closing),r.remaining===null?'N/A':fmt(Math.max(0,r.remaining)),bar,'<span class="capacity-status '+r.cls+'">'+r.status+'</span>',r.net===null?'N/A':fmt(r.net),r.forecast];
+ });
+ $('destinationCapacityTable').innerHTML='<div class="tablewrap"><table><thead><tr><th>Destination ID</th><th>Name</th><th>Type</th><th>Pit</th><th>Material</th><th>Capacity WMT</th><th>Closing WMT</th><th>Remaining WMT</th><th>Utilization</th><th>Status</th><th>Net / Day WMT</th><th>Forecast Full</th></tr></thead><tbody>'+(rows.length?rows.map(r=>'<tr>'+r.map((v,i)=>'<td>'+(i===8||i===9?v:escapeHtml(v))+'</td>').join('')+'</tr>').join(''):'<tr><td colspan="12" class="empty">No destination master records</td></tr>')+'</tbody></table></div>';
+}
+
+let balanceExportRows=[];
+function renderMaterialBalance(balance,master){
+ const pit=$('mbPit'),mat=$('mbMaterial'),dest=$('mbDestination'),type=$('mbType');
+ const fillOptions=(id,vals,label)=>{let el=$(id),old=el.value,u=[...new Set(vals.filter(v=>v!==null&&v!==undefined&&String(v).trim()!=='').map(String))].sort();el.innerHTML='<option value="">'+label+'</option>'+u.map(v=>'<option value="'+escapeHtml(v)+'">'+escapeHtml(v)+'</option>').join('');if(u.includes(old))el.value=old};
+ fillOptions('mbPit',[...balance.map(r=>r.pit),...master.map(r=>r.pit)],'All Pits');
+ fillOptions('mbDestination',[...balance.map(r=>r.destination),...master.map(r=>r.dump_id)],'All Destinations');
+ const masterById=new Map(master.map(m=>[String(m.dump_id),m]));
+ const rows=balance.filter(r=>(!pit.value||String(r.pit)===pit.value)&&(!mat.value||normalizeMaterial(r.material)===mat.value)&&(!dest.value||String(r.destination)===dest.value)&&(!type.value||String(masterById.get(String(r.destination))?.dump_type||'')===type.value));
+ const n=v=>Number.isFinite(Number(v))?Number(v):0;
+ const closingValue=r=>r.closing_wmt!==null&&r.closing_wmt!==undefined&&r.closing_wmt!==''?n(r.closing_wmt):n(r.opening_wmt)+n(r.mined_wmt)-n(r.hauled_wmt);
+ const keyOf=r=>[r.pit||'',r.destination||'',normalizeMaterial(r.material)].join('|');
+ const groupedRows=new Map();
+ rows.forEach(r=>{let k=keyOf(r);if(!groupedRows.has(k))groupedRows.set(k,[]);groupedRows.get(k).push(r)});
+ let opening=0,closing=0;
+ const closingByDest={};
+ groupedRows.forEach(list=>{
+   list.sort((a,b)=>String(a.report_date).localeCompare(String(b.report_date)));
+   opening+=n(list[0].opening_wmt);
+   const last=list[list.length-1];
+   const lastClosing=closingValue(last);closing+=lastClosing;
+   const dk=String(last.destination||'Unassigned');closingByDest[dk]=(closingByDest[dk]||0)+lastClosing;
+ });
+ const incoming=rows.reduce((s,r)=>s+n(r.mined_wmt),0),outgoing=rows.reduce((s,r)=>s+n(r.hauled_wmt),0);
+ $('mbOpening').textContent=rows.length?fmt(opening):'N/A';$('mbIncoming').textContent=rows.length?fmt(incoming):'N/A';$('mbOutgoing').textContent=rows.length?fmt(outgoing):'N/A';$('mbClosing').textContent=rows.length?fmt(closing):'N/A';$('mbRecords').textContent=fmt(rows.length);
+ const selectedDest=[...new Set(rows.map(r=>String(r.destination||'')))].filter(Boolean);
+ // Capacity is only counted for destinations that actually appear in the selected ledger.
+ const selectedMasters=master.filter(m=>selectedDest.includes(String(m.dump_id))).filter(m=>!dest.value||String(m.dump_id)===dest.value).filter(m=>!pit.value||String(m.pit||'')===pit.value).filter(m=>!type.value||String(m.dump_type||'')===type.value);
+ const capacity=selectedMasters.reduce((s,m)=>s+n(m.capacity_wmt),0);
+ const allHaveCapacity=selectedMasters.length>0&&selectedMasters.every(m=>n(m.capacity_wmt)>0);
+ const remaining=allHaveCapacity?selectedMasters.reduce((s,m)=>s+Math.max(0,n(m.capacity_wmt)-Math.max(0,closingByDest[String(m.dump_id)]||0)),0):null;
+ const mappedClosing=selectedMasters.reduce((s,m)=>s+Math.max(0,closingByDest[String(m.dump_id)]||0),0);
+ $('mbCapacity').textContent=allHaveCapacity?fmt(capacity):'N/A';$('mbRemaining').textContent=remaining===null?'N/A':fmt(remaining);$('mbUtilization').textContent=allHaveCapacity&&capacity>0?fmt(mappedClosing/capacity*100)+'%':'N/A';
+ const ledger=rows.map(r=>{let calc=n(r.opening_wmt)+n(r.mined_wmt)-n(r.hauled_wmt),recorded=r.closing_wmt===null||r.closing_wmt===undefined||r.closing_wmt===''?null:n(r.closing_wmt),variance=recorded===null?null:calc-recorded;return [r.report_date,r.pit,r.destination,normalizeMaterial(r.material),fmt(r.opening_wmt),fmt(r.mined_wmt),fmt(r.hauled_wmt),fmt(calc),recorded===null?'N/A':fmt(recorded),variance===null?'N/A':fmt(variance),recorded===null?'NO RECORDED CLOSING':Math.abs(variance)<=0.01?'BALANCED':'VARIANCE']});
+ setTable('balanceTableV24',['Date','Pit','Destination','Material','Opening WMT','Mined / In WMT','Hauled / Out WMT','Calculated Closing WMT','Recorded Closing WMT','Variance WMT','Status'],ledger);
+ const summary={};groupedRows.forEach(list=>{list.sort((a,b)=>String(a.report_date).localeCompare(String(b.report_date)));const first=list[0],last=list[list.length-1],k=String(last.destination||'Unassigned')+'|'+normalizeMaterial(last.material);summary[k]={destination:last.destination||'Unassigned',material:normalizeMaterial(last.material),opening:n(first.opening_wmt),incoming:list.reduce((s,r)=>s+n(r.mined_wmt),0),outgoing:list.reduce((s,r)=>s+n(r.hauled_wmt),0),closing:closingValue(last)}});
+ setTable('mbDestinationSummary',['Destination','Material','Opening WMT','Incoming WMT','Outgoing WMT','Closing WMT'],Object.values(summary).map(g=>[g.destination,g.material,fmt(g.opening),fmt(g.incoming),fmt(g.outgoing),fmt(g.closing)]));
+ setTable('mbCapacityTable',['Destination ID','Name','Type','Pit','Capacity WMT','Closing from Ledger WMT','Remaining WMT','Utilization'],selectedMasters.map(m=>{let c=Math.max(0,closingByDest[String(m.dump_id)]||0),cap=n(m.capacity_wmt);return [m.dump_id,m.dump_name,m.dump_type,m.pit,cap?fmt(cap):'N/A',fmt(c),cap?fmt(Math.max(0,cap-c)):'N/A',cap?fmt(c/cap*100)+'%':'N/A']}));
+ const byDay={};const dailyGroups=new Map();rows.forEach(r=>{let d=String(r.report_date||'N/A'),k=d+'|'+keyOf(r);if(!dailyGroups.has(k))dailyGroups.set(k,[]);dailyGroups.get(k).push(r)});
+ dailyGroups.forEach(list=>{list.sort((a,b)=>String(a.report_date).localeCompare(String(b.report_date)));let r=list[list.length-1],d=String(r.report_date||'N/A');byDay[d]=(byDay[d]||0)+closingValue(r)});
+ const days=Object.keys(byDay).sort();if(charts.balanceChartV24)charts.balanceChartV24.destroy();if(window.Chart&&days.length)charts.balanceChartV24=new Chart($('balanceChartV24'),{type:'line',data:{labels:days,datasets:[{label:'Closing Stock WMT',data:days.map(d=>byDay[d]),borderColor:'#39c49a',backgroundColor:'rgba(57,196,154,.15)',tension:.25,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#c6d4e4'}}},scales:{x:{ticks:{color:'#91a6bf'},grid:{display:false}},y:{ticks:{color:'#91a6bf'},grid:{color:'#2b405b'}}}}});
+ if(!days.length&&charts.balanceChartV24){charts.balanceChartV24.destroy();delete charts.balanceChartV24}
+ balanceExportRows=[['report_date','pit','destination','material','opening_wmt','mined_wmt','hauled_wmt','calculated_closing_wmt','recorded_closing_wmt','variance_wmt','status'],...ledger.map((r,i)=>{const x=rows[i],calc=n(x.opening_wmt)+n(x.mined_wmt)-n(x.hauled_wmt),rec=x.closing_wmt??'';return [x.report_date,x.pit,x.destination,normalizeMaterial(x.material),x.opening_wmt,x.mined_wmt,x.hauled_wmt,calc,rec,rec===''?'':calc-n(rec),rec===''?'NO RECORDED CLOSING':Math.abs(calc-n(rec))<=0.01?'BALANCED':'VARIANCE']})];
+}
+let tmmExportRows=[];
+function setFilterOptions(id,values,firstLabel){
+ const el=$(id),old=el.value,unique=[...new Set(values.filter(v=>v!==null&&v!==undefined&&String(v).trim()!=='').map(v=>String(v)))].sort();
+ el.innerHTML='<option value="">'+firstLabel+'</option>'+unique.map(v=>'<option value="'+escapeHtml(v)+'">'+escapeHtml(v)+'</option>').join('');
+ if(unique.includes(old))el.value=old;
+}
+function renderTmm(prod,haulingFleet,dump){
+ const pitSel=$('tmmPitFilter'),conSel=$('tmmContractorFilter'),matSel=$('tmmMaterialFilter'),destSel=$('tmmDestinationFilter');
+ setFilterOptions('tmmPitFilter',[...prod.map(r=>r.pit),...haulingFleet.map(r=>r.pit),...dump.map(r=>r.pit)],'All Pits');
+ setFilterOptions('tmmContractorFilter',[...prod.map(r=>r.contractor),...haulingFleet.map(r=>r.contractor),...dump.map(r=>r.contractor)],'All Contractors');
+ setFilterOptions('tmmDestinationFilter',[...haulingFleet.map(r=>r.destination_id),...dump.map(r=>r.dump_id)],'All Destinations');
+ const filters={pit:pitSel.value,contractor:conSel.value,material:matSel.value,destination:destSel.value};
+ const common=(r)=> (!filters.pit||r.pit===filters.pit)&&(!filters.contractor||r.contractor===filters.contractor)&&(!filters.material||normalizeMaterial(r.material)===filters.material);
+ const pRows=prod.filter(common);
+ const hRows=haulingFleet.filter(common);
+ const dRows=dump.filter(common).filter(r=>!filters.destination||r.dump_id===filters.destination);
+ const mappedForPH=hRows.filter(r=>r.material);
+ const mappedForHD=hRows.filter(r=>r.material&&r.destination_id).filter(r=>!filters.destination||r.destination_id===filters.destination);
+ $('tProd').textContent=pRows.length?fmt(sum(pRows,'actual_wmt')):'N/A';
+ $('tHaul').textContent=hRows.length?fmt(sum(hRows,'wmt')):'N/A';
+ $('tDest').textContent=dRows.length?fmt(sum(dRows,'actual_wmt')):'N/A';
+ $('tUnmapped').textContent=String(hRows.filter(r=>!r.material||!r.destination_id).length);
+ const key4=(date,pit,contractor,material)=>[date||'',pit||'',contractor||'',normalizeMaterial(material)].join('|');
+ const key5=(date,pit,contractor,material,destination)=>[date||'',pit||'',contractor||'',normalizeMaterial(material),destination||''].join('|');
+ const pg=new Map(),hg4=new Map();
+ pRows.forEach(r=>{let k=key4(r.report_date,r.pit,r.contractor,r.material);if(!pg.has(k))pg.set(k,{date:r.report_date,pit:r.pit,contractor:r.contractor,material:normalizeMaterial(r.material),wmt:0});pg.get(k).wmt+=Number(r.actual_wmt||0)});
+ mappedForPH.forEach(r=>{let k=key4(r.report_date,r.pit,r.contractor,r.material);if(!hg4.has(k))hg4.set(k,{date:r.report_date,pit:r.pit,contractor:r.contractor,material:normalizeMaterial(r.material),wmt:0,bcm:0});hg4.get(k).wmt+=Number(r.wmt||0);hg4.get(k).bcm+=Number(r.bcm||0)});
+ const keys4=new Set([...pg.keys(),...hg4.keys()]);
+ const rows4=[...keys4].sort().map(k=>{let p=pg.get(k),h=hg4.get(k),x=p||{...h,date:'—',pit:'—',contractor:'—',material:'—'},variance=p&&h?p.wmt-h.wmt:null;return [x.date,x.pit,x.contractor,x.material,p?fmt(p.wmt):'N/A',h?fmt(h.wmt):'N/A',variance===null?'N/A':fmt(variance),variance===null?'NO MATCH':Math.abs(variance)<=0.01?'BALANCED':'VARIANCE']});
+ setTable('tmmProductionTable',['Date','Pit','Contractor','Material','Production WMT','Hauling WMT','Prod − Haul WMT','Status'],rows4);
+ const hg5=new Map(),dg5=new Map();
+ mappedForHD.forEach(r=>{let k=key5(r.report_date,r.pit,r.contractor,r.material,r.destination_id);if(!hg5.has(k))hg5.set(k,{date:r.report_date,pit:r.pit,contractor:r.contractor,material:normalizeMaterial(r.material),destination:r.destination_id,wmt:0,bcm:0});let g=hg5.get(k);g.wmt+=Number(r.wmt||0);g.bcm+=Number(r.bcm||0)});
+ dRows.forEach(r=>{let k=key5(r.movement_date,r.pit,r.contractor,r.material,r.dump_id);if(!dg5.has(k))dg5.set(k,{date:r.movement_date,pit:r.pit,contractor:r.contractor,material:normalizeMaterial(r.material),destination:r.dump_id,wmt:0,bcm:0});let g=dg5.get(k);g.wmt+=Number(r.actual_wmt||0);g.bcm+=Number(r.actual_bcm||0)});
+ const keys5=new Set([...hg5.keys(),...dg5.keys()]);
+ const rows5=[...keys5].sort().map(k=>{let h=hg5.get(k),d=dg5.get(k),x=h||d,vw=h&&d?h.wmt-d.wmt:null,vb=h&&d?h.bcm-d.bcm:null;return [x.date,x.pit,x.contractor,x.material,x.destination,h?fmt(h.wmt):'N/A',d?fmt(d.wmt):'N/A',vw===null?'N/A':fmt(vw),h?fmt(h.bcm):'N/A',d?fmt(d.bcm):'N/A',vb===null?'N/A':fmt(vb),vw===null?'NO MATCH':Math.abs(vw)<=0.01&&Math.abs(vb)<=0.01?'BALANCED':'VARIANCE']});
+ setTable('tmmDestinationTable',['Date','Pit','Contractor','Material','Destination ID','Hauling WMT','Destination WMT','Variance WMT','Hauling BCM','Destination BCM','Variance BCM','Status'],rows5);
+ const unmapped=hRows.filter(r=>!r.material||!r.destination_id).map(r=>[r.report_date,r.pit,r.contractor,r.material||'MISSING',r.destination_id||'MISSING',r.equipment_id,fmt(r.wmt),fmt(r.bcm),!r.material&&!r.destination_id?'Material & Destination missing':!r.material?'Material missing':'Destination missing']);
+ setTable('tmmUnmappedTable',['Date','Pit','Contractor','Material','Destination ID','Equipment ID','WMT','BCM','Issue'],unmapped);
+ const allStatuses=[...rows4.map(r=>r[7]),...rows5.map(r=>r[11])],balanced=allStatuses.filter(s=>s==='BALANCED').length,variance=allStatuses.filter(s=>s==='VARIANCE').length,noMatch=allStatuses.filter(s=>s==='NO MATCH').length,balanced5=rows5.filter(r=>r[11]==='BALANCED').length;
+ $('tBalanced').textContent=balanced;$('tVariance').textContent=variance;$('tNoMatch').textContent=noMatch;$('tAchievement').textContent=rows5.length?fmt(balanced5/rows5.length*100)+'%':'N/A';
+ tmmExportRows=[['Section','Date','Pit','Contractor','Material','Destination ID','Production WMT','Hauling WMT','Destination WMT','Variance WMT','Hauling BCM','Destination BCM','Variance BCM','Status']];
+ rows4.forEach(r=>tmmExportRows.push(['Production vs Hauling',r[0],r[1],r[2],r[3],'',r[4],r[5],'',r[6],'','','',r[7]]));
+ rows5.forEach(r=>tmmExportRows.push(['Hauling vs Destination',r[0],r[1],r[2],r[3],r[4],'',r[5],r[6],r[7],r[8],r[9],r[10],r[11]]));
+ unmapped.forEach(r=>tmmExportRows.push(['Unmapped',r[0],r[1],r[2],r[3],r[4],'',r[6],'','','',r[7],'','UNMAPPED']));
+}
+function formObject(form){let o=Object.fromEntries(new FormData(form).entries());Object.keys(o).forEach(k=>{if(o[k]==='')o[k]=null;else if(['plan_wmt','actual_wmt','plan_bcm','actual_bcm','capacity_wmt','capacity_bcm','operating_hours','standby_hours','breakdown_hours','bcm','wmt','cycle_time'].includes(k))o[k]=Number(o[k])});return o}
+async function insertForm(id,table,msgId){$(id).addEventListener('submit',async e=>{e.preventDefault();let payload=formObject(e.target);if(sessionUser)payload.created_by=sessionUser.id;let {error}=await db.from(table).insert(payload);if(error){$(msgId).textContent='Save failed: '+error.message;return}$(msgId).textContent='Saved successfully to '+table;e.target.reset();await loadAll()})}
+insertForm('productionForm','production_daily','inputMsg');$('fleetForm').addEventListener('submit',e=>{let f=e.target;if((Number(f.elements.bcm.value||0)!==0||Number(f.elements.wmt.value||0)!==0)&&(!f.elements.material.value||!f.elements.destination_id.value)){e.preventDefault();e.stopImmediatePropagation();$('fleetMsg').textContent='Untuk record hauling dengan BCM/WMT, Material dan Destination ID wajib diisi. Untuk support equipment tanpa movement, biarkan kosong.'}},true);insertForm('fleetForm','fleet_daily','fleetMsg');insertForm('planForm','mine_plan_daily','status');insertForm('dumpForm','dump_master','status');
+function downloadCsv(filename,rows){let csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=filename;a.click();URL.revokeObjectURL(a.href)}
+$('exportProduction').onclick=()=>downloadCsv('production_daily.csv',[Object.keys(cache.prod[0]||{report_date:'',shift:'',contractor:'',pit:'',material:'',plan_wmt:'',actual_wmt:''}),...cache.prod.map(r=>Object.values(r))]);$('exportTmm').onclick=()=>downloadCsv('tmm_reconciliation.csv',[['date','pit','material','production_wmt','hauling_wmt','destination_wmt'],...cache.prod.map(r=>[r.report_date,r.pit,r.material,r.actual_wmt, sum(cache.fleet.filter(f=>f.report_date===r.report_date&&f.pit===r.pit),'wmt'),sum(cache.dump.filter(d=>d.movement_date===r.report_date&&d.pit===r.pit&&d.material===r.material),'actual_wmt')])]);
+$('csvTemplate').onclick=()=>downloadCsv('production_template.csv',[['report_date','shift','contractor','pit','material','plan_wmt','actual_wmt','remarks'],['2026-11-01','Day','Contractor A','PIT-01','SAP',1000,950,'Sample row - replace with actual']]);$('importCsv').onclick=async()=>{let file=$('csvFile').files[0];if(!file){$('inputMsg').textContent='Choose a CSV file first.';return}let lines=(await file.text()).trim().split(/\r?\n/);let headers=lines.shift().split(',').map(x=>x.trim());let required=['report_date','shift','contractor','pit','material','plan_wmt','actual_wmt'];if(!required.every(x=>headers.includes(x))){$('inputMsg').textContent='CSV headers are incomplete.';return}let rows=lines.slice(0,500).map(line=>{let vals=line.match(/("(?:[^"]|"")*"|[^,]*)(,|$)/g)?.filter(x=>x!==',').map(x=>x.replace(/,$/,'').replace(/^"|"$/g,'').replace(/""/g,'"'))||[];let obj={};headers.forEach((h,i)=>obj[h]=vals[i]??null);['plan_wmt','actual_wmt'].forEach(k=>obj[k]=Number(obj[k]||0));if(sessionUser)obj.created_by=sessionUser.id;return obj});let {error}=await db.from('production_daily').insert(rows);$('inputMsg').textContent=error?'Import failed: '+error.message:'Imported '+rows.length+' rows.';if(!error)await loadAll()};
+$('fleetTemplate').onclick=()=>downloadCsv('fleet_daily_template.csv',[['report_date','shift','contractor','pit','material','destination_id','equipment_type','equipment_id','operating_hours','standby_hours','breakdown_hours','bcm','wmt','cycle_time','remarks'],['2026-11-01','DS','Contractor A','PIT A','SAP','DMP-001','ADT','ADT-001',10,2,0,500,750,18,'Replace with actual data']]);
+function csvToRows(text){let rows=[],row=[],field='',quoted=false;for(let i=0;i<text.length;i++){let c=text[i],n=text[i+1];if(c==='"'&&quoted&&n==='"'){field+='"';i++}else if(c==='"'){quoted=!quoted}else if(c===','&&!quoted){row.push(field);field=''}else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&n==='\n')i++;row.push(field);if(row.some(v=>v.trim()!==''))rows.push(row);row=[];field=''}else field+=c}row.push(field);if(row.some(v=>v.trim()!==''))rows.push(row);return rows}
+$('importFleet').onclick=async()=>{let file=$('fleetFile').files[0];if(!file){$('fleetImportMsg').textContent='Pilih file Excel atau CSV terlebih dahulu.';return}try{let matrix;if(/\.xlsx?$|\.xls$/i.test(file.name)){if(!window.XLSX)throw new Error('Excel reader belum termuat. Coba CSV.');let wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:false});matrix=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''})}else matrix=csvToRows(await file.text());if(!matrix.length)throw new Error('File kosong.');let headers=matrix.shift().map(v=>String(v).trim().toLowerCase().replace(/\s+/g,'_'));let required=['report_date','contractor','pit','material','destination_id','equipment_type','equipment_id'];let missing=required.filter(h=>!headers.includes(h));if(missing.length)throw new Error('Header wajib belum ditemukan: '+missing.join(', ')+'. Upload file agar mapping kolom dapat disesuaikan.');let allowed=['report_date','shift','contractor','pit','material','destination_id','equipment_type','equipment_id','operating_hours','standby_hours','breakdown_hours','bcm','wmt','cycle_time','remarks'];let rows=matrix.slice(0,1000).map(line=>{let obj={};headers.forEach((h,i)=>{if(allowed.includes(h))obj[h]=line[i]===''?null:line[i]});['operating_hours','standby_hours','breakdown_hours','bcm','wmt','cycle_time'].forEach(k=>{if(obj[k]!==undefined&&obj[k]!==null)obj[k]=Number(obj[k])});if(sessionUser)obj.created_by=sessionUser.id;return obj}).filter(r=>r.report_date&&r.equipment_type&&r.equipment_id);if(!rows.length)throw new Error('Tidak ada baris valid.');let {error}=await db.from('fleet_daily').insert(rows);if(error)throw error;$('fleetImportMsg').textContent='Berhasil import '+rows.length+' record fleet_daily.';await loadAll()}catch(e){$('fleetImportMsg').textContent='Import gagal: '+e.message;console.error(e)}};
+$('exportTmmV23').onclick=()=>downloadCsv('TMM_Reconciliation_V2.3.csv',tmmExportRows);
+['tmmPitFilter','tmmContractorFilter','tmmMaterialFilter','tmmDestinationFilter'].forEach(id=>$(id).addEventListener('change',()=>renderTmm(cache.prod,cache.fleet.filter(r=>Number(r.bcm||0)!==0||Number(r.wmt||0)!==0),cache.dump)));
+$('resetTmmFilters').onclick=()=>{['tmmPitFilter','tmmContractorFilter','tmmMaterialFilter','tmmDestinationFilter'].forEach(id=>$(id).value='');renderTmm(cache.prod,cache.fleet.filter(r=>Number(r.bcm||0)!==0||Number(r.wmt||0)!==0),cache.dump)};
+$('exportBalanceV24').onclick=()=>downloadCsv('Material_Balance_V2.4.1.csv',balanceExportRows);
+['mbPit','mbMaterial','mbDestination','mbType'].forEach(id=>$(id).addEventListener('change',()=>renderMaterialBalance(cache.balance,cache.master)));
+$('mbReset').onclick=()=>{['mbPit','mbMaterial','mbDestination','mbType'].forEach(id=>$(id).value='');renderMaterialBalance(cache.balance,cache.master)};
+$('refresh').onclick=loadAll;$('fromDate').onchange=loadAll;$('toDate').onchange=loadAll;document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.module').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.page).classList.add('active');$('pageTitle').textContent=b.textContent.trim()});
+$('loginForm').onsubmit=async e=>{e.preventDefault();$('authMsg').textContent='Signing in...';let {data,error}=await db.auth.signInWithPassword({email:$('email').value,password:$('password').value});if(error){$('authMsg').textContent=error.message;return}sessionUser=data.user;document.body.classList.add('authenticated');await loadAll()};$('logout').onclick=async()=>{await db.auth.signOut();sessionUser=null;document.body.classList.remove('authenticated')};async function init(){let {data}=await db.auth.getSession();if(data.session){sessionUser=data.session.user;document.body.classList.add('authenticated');await loadAll()}}db.auth.onAuthStateChange((event,s)=>{if(event==='SIGNED_OUT'){document.body.classList.remove('authenticated');sessionUser=null}});init();
+</script></body></html>
